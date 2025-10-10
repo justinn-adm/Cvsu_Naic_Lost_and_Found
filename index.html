@@ -9,11 +9,7 @@
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin:0; padding:0; box-sizing:border-box; }
 
     body {
       font-family: 'Agrandir', sans-serif;
@@ -48,7 +44,6 @@
     }
 
     .navbar-title span {
-      font-family: 'Agrandir', sans-serif;
       font-weight: 800;
       font-size: 1.4rem;
       color: #000;
@@ -57,7 +52,6 @@
 
     nav a {
       text-decoration: none;
-      font-family: 'Agrandir', sans-serif;
       color: #000;
       font-weight: 800;
       font-size: 1.05rem;
@@ -66,6 +60,7 @@
       transition: all 0.3s ease;
       letter-spacing: 0.6px;
       text-transform: uppercase;
+      cursor: pointer;
     }
 
     nav a::after {
@@ -79,33 +74,24 @@
       transition: width 0.3s ease;
     }
 
-    nav a:hover {
-      color: #9333ea;
-    }
-
-    nav a:hover::after {
-      width: 100%;
-    }
+    nav a:hover { color:#9333ea; }
+    nav a:hover::after { width: 100%; }
 
     /* MAIN */
     .main-container {
       text-align: center;
       margin-top: 40px;
-    }
-
-    .typing-box {
-      margin-bottom: 20px;
+      width: 90%;
+      max-width: 1000px;
     }
 
     .typing-box h1 {
-      font-family: 'Agrandir', sans-serif;
       font-size: 3rem;
       color: #000;
       margin-bottom: 10px;
       line-height: 1.2;
+      font-weight: 800;
       min-height: 85px;
-       font-weight: 800;
-
     }
 
     .typing-box span {
@@ -115,27 +101,15 @@
       animation: fadeInUp 0.8s ease forwards;
     }
 
-    @keyframes fadeInUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
+    @keyframes fadeInUp { to { opacity:1; transform: translateY(0); } }
 
-    .tagline {
-      font-size: 1.4rem;
-      color: #000;
-      margin-top: 10px;
-      margin-bottom: 40px;
-      
-    }
+    .tagline { font-size:1.4rem; margin-bottom: 40px; color:#000; }
 
     /* CARDS */
     .cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 25px;
-      max-width: 900px;
       margin: 0 auto;
     }
 
@@ -155,17 +129,8 @@
       box-shadow: 0 6px 15px rgba(147, 51, 234, 0.15);
     }
 
-    .card i {
-      font-size: 2rem;
-      margin-bottom: 10px;
-      color: #000;
-    }
-
-    .card h3 {
-      font-size: 1.2rem;
-      margin-bottom: 8px;
-       font-weight: 800;
-    }
+    .card i { font-size: 2rem; margin-bottom: 10px; }
+    .card h3 { font-size: 1.2rem; margin-bottom: 8px; font-weight:800; }
 
     /* LOGIN BUTTON */
     .login-button {
@@ -184,61 +149,54 @@
       transition: transform 0.3s ease;
     }
 
-    .login-button:hover {
-      transform: translateY(-4px);
-    }
+    .login-button:hover { transform: translateY(-4px); }
 
     .login-button::before {
-      content: "";
-      position: absolute;
-      top: 0; left: -100%;
-      width: 200%; height: 100%;
+      content:"";
+      position:absolute;
+      top:0; left:-100%;
+      width:200%; height:100%;
       background: linear-gradient(120deg, transparent, rgba(255,255,255,0.4), transparent);
-      transition: 0.5s;
+      transition:0.5s;
     }
 
-    .login-button:hover::before {
-      left: 100%;
-    }
+    .login-button:hover::before { left:100%; }
 
-    /* RESPONSIVE */
-    @media (max-width: 768px) {
-      header {
-        flex-direction: column;
-        text-align: center;
-        gap: 10px;
-      }
-      .typing-box h1 {
-        font-size: 2.2rem;
-      }
-      .navbar-title span {
-        font-size: 1.2rem;
-      }
-      nav a {
-        margin-left: 20px;
-      }
+    @media (max-width:768px){
+      header { flex-direction: column; text-align:center; gap:10px; }
+      .typing-box h1 { font-size:2.2rem; }
+      nav a { margin-left:20px; }
+      .navbar-title span { font-size:1.2rem; }
     }
   </style>
 </head>
 
 <body>
-  <!-- HEADER -->
-  <header>
-    <div class="navbar-title">
-      <img src="images/logo.png" alt="CvSU Logo">
-      <span><strong>Lost and Found</strong><br>CvSU NAIC</span>
-    </div>
-    <nav>
-       <a href="faq.html">Log In</a>
-      <a href="about.html">ABOUT US</a>
-      <a href="faq.html">FAQ</a>
-      
-    </nav>
-  </header>
 
-  <!-- MAIN -->
-  <div class="main-container">
-    <div class="typing-box">
+<!-- HEADER -->
+<header>
+  <div class="navbar-title">
+    <img src="images/logo.png" alt="CvSU Logo">
+    <span><strong>Lost and Found</strong><br>CvSU NAIC</span>
+  </div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="about.html">ABOUT US</a>
+    <a href="faq.html">FAQ</a>
+  </nav>
+</header>
+
+<!-- MAIN CONTENT -->
+<div class="main-container" id="mainContent">
+  <!-- Original content HTML stored for restoring -->
+</div>
+
+<script>
+  const mainContent = document.getElementById("mainContent");
+
+  // Original index.html main content as a string
+  const originalContent = `
+    <div class="typing-box" id="typingBox">
       <h1 id="typingText">
         <span>Looking For</span>
         <span>Something?</span>
@@ -252,13 +210,11 @@
         <h3>Report Lost Item</h3>
         <p>Submit details about something you lost on campus.</p>
       </div>
-
       <div class="card">
         <i class="fas fa-box-open"></i>
         <h3>Report Found Item</h3>
         <p>Help return belongings by reporting items you’ve found.</p>
       </div>
-
       <div class="card">
         <i class="fas fa-clipboard-list"></i>
         <h3>View Lost & Found Board</h3>
@@ -269,37 +225,52 @@
     <a href="SignIn_SignUp.html">
       <button class="login-button">Log in</button>
     </a>
-  </div>
+  `;
 
-  <!-- SCRIPT -->
-  <script>
-    const phrases = [
-      ["Looking For", "Something?"],
-      ["Lost an", "Item?"],
-      ["Found", "Something?"],
-      ["Need to Report", "a Loss?"],
-      ["Reclaim Your", "Belongings?"],
-      ["Help Us Return", "Items!"]
-    ];
+  mainContent.innerHTML = originalContent;
 
+  // Typing animation
+  const phrases = [
+    ["Looking For", "Something?"],
+    ["Lost an", "Item?"],
+    ["Found", "Something?"],
+    ["Need to Report", "a Loss?"],
+    ["Reclaim Your", "Belongings?"],
+    ["Help Us Return", "Items!"]
+  ];
+
+  let index = 0;
+  function updateTypingText() {
     const typingBox = document.getElementById("typingText");
-    let index = 0;
+    const [line1, line2] = phrases[index];
+    typingBox.innerHTML = `<span>${line1}</span><span>${line2}</span>`;
+    const spans = typingBox.querySelectorAll('span');
+    spans.forEach((span, i) => {
+      span.style.opacity = 0;
+      span.style.transform = 'translateY(20px)';
+      span.style.animation = 'fadeInUp 0.8s ease forwards';
+      span.style.animationDelay = `${0.4 + i*0.4}s`;
+    });
+    index = (index+1) % phrases.length;
+  }
+  updateTypingText();
+  setInterval(updateTypingText, 3000);
 
-    function updateTypingText() {
-      const [line1, line2] = phrases[index];
-      typingBox.innerHTML = `<span>${line1}</span><span>${line2}</span>`;
-      const spans = typingBox.querySelectorAll('span');
-      spans.forEach((span, i) => {
-        span.style.opacity = 0;
-        span.style.transform = 'translateY(20px)';
-        span.style.animation = 'fadeInUp 0.8s ease forwards';
-        span.style.animationDelay = `${0.4 + i * 0.4}s`;
-      });
-      index = (index + 1) % phrases.length;
-    }
+  // Navigation links click handler
+  document.querySelectorAll("nav a").forEach(link => {
+    link.addEventListener("click", e => {
+      e.preventDefault();
+      const target = link.getAttribute("href");
 
-    updateTypingText();
-    setInterval(updateTypingText, 3000);
-  </script>
+      if(target === "index.html") {
+        mainContent.innerHTML = originalContent;
+        updateTypingText(); // restart typing animation
+      } else {
+        mainContent.innerHTML = `<iframe src="${target}" style="width:100%; height:80vh; border:none;"></iframe>`;
+      }
+    });
+  });
+</script>
+
 </body>
 </html>
