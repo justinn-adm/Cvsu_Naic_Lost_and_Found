@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lost and Found CvSU Naic</title>
+
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Agrandir:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Agrandir', sans-serif;
+      background: url('purple.png') no-repeat center center fixed;
+      background-size: cover;
+      color: #000;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* HEADER */
+    header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 60px;
+    }
+
+    .navbar-title {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .navbar-title img {
+      width: 55px;
+      height: 45px;
+      object-fit: contain;
+    }
+
+    .navbar-title span {
+      font-family: 'Agrandir', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      color: #000;
+      letter-spacing: 0.5px;
+    }
+
+    nav a {
+      text-decoration: none;
+      font-family: 'Agrandir', sans-serif;
+      color: #000;
+      font-weight: 800;
+      font-size: 1.05rem;
+      margin-left: 80px;
+      position: relative;
+      transition: all 0.3s ease;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+
+    nav a::after {
+      content: "";
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #9333ea;
+      transition: width 0.3s ease;
+    }
+
+    nav a:hover {
+      color: #9333ea;
+    }
+
+    nav a:hover::after {
+      width: 100%;
+    }
+
+    /* MAIN */
+    .main-container {
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    .typing-box {
+      margin-bottom: 20px;
+    }
+
+    .typing-box h1 {
+      font-family: 'Agrandir', sans-serif;
+      font-size: 3rem;
+      color: #000;
+      margin-bottom: 10px;
+      line-height: 1.2;
+      min-height: 85px;
+       font-weight: 800;
+
+    }
+
+    .typing-box span {
+      display: block;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.8s ease forwards;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .tagline {
+      font-size: 1.4rem;
+      color: #000;
+      margin-top: 10px;
+      margin-bottom: 40px;
+      
+    }
+
+    /* CARDS */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 25px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: rgba(147, 51, 234, 0.08);
+      border-radius: 20px;
+      padding: 30px 20px;
+      color: #000;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      border: 1px solid #a855f7;
+      box-shadow: 0 6px 15px rgba(147, 51, 234, 0.15);
+    }
+
+    .card i {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      color: #000;
+    }
+
+    .card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 8px;
+       font-weight: 800;
+    }
+
+    /* LOGIN BUTTON */
+    .login-button {
+      margin-top: 50px;
+      padding: 14px 40px;
+      background: linear-gradient(to right, #9333ea, #a855f7);
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 6px 15px rgba(147, 51, 234, 0.4);
+      transition: transform 0.3s ease;
+    }
+
+    .login-button:hover {
+      transform: translateY(-4px);
+    }
+
+    .login-button::before {
+      content: "";
+      position: absolute;
+      top: 0; left: -100%;
+      width: 200%; height: 100%;
+      background: linear-gradient(120deg, transparent, rgba(255,255,255,0.4), transparent);
+      transition: 0.5s;
+    }
+
+    .login-button:hover::before {
+      left: 100%;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+      }
+      .typing-box h1 {
+        font-size: 2.2rem;
+      }
+      .navbar-title span {
+        font-size: 1.2rem;
+      }
+      nav a {
+        margin-left: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- HEADER -->
+  <header>
+    <div class="navbar-title">
+      <img src="images/logo.png" alt="CvSU Logo">
+      <span><strong>Lost and Found</strong><br>CvSU NAIC</span>
+    </div>
+    <nav>
+       <a href="faq.html">Log In</a>
+      <a href="about.html">ABOUT US</a>
+      <a href="faq.html">FAQ</a>
+      
+    </nav>
+  </header>
+
+  <!-- MAIN -->
+  <div class="main-container">
+    <div class="typing-box">
+      <h1 id="typingText">
+        <span>Looking For</span>
+        <span>Something?</span>
+      </h1>
+    </div>
+    <p class="tagline">Lost something? Let the campus help you get it back.</p>
+
+    <div class="cards">
+      <div class="card">
+        <i class="fas fa-search"></i>
+        <h3>Report Lost Item</h3>
+        <p>Submit details about something you lost on campus.</p>
+      </div>
+
+      <div class="card">
+        <i class="fas fa-box-open"></i>
+        <h3>Report Found Item</h3>
+        <p>Help return belongings by reporting items you’ve found.</p>
+      </div>
+
+      <div class="card">
+        <i class="fas fa-clipboard-list"></i>
+        <h3>View Lost & Found Board</h3>
+        <p>Browse all posted lost and found items at CvSU Naic.</p>
+      </div>
+    </div>
+
+    <a href="SignIn_SignUp.html">
+      <button class="login-button">Log in</button>
+    </a>
+  </div>
+
+  <!-- SCRIPT -->
+  <script>
+    const phrases = [
+      ["Looking For", "Something?"],
+      ["Lost an", "Item?"],
+      ["Found", "Something?"],
+      ["Need to Report", "a Loss?"],
+      ["Reclaim Your", "Belongings?"],
+      ["Help Us Return", "Items!"]
+    ];
+
+    const typingBox = document.getElementById("typingText");
+    let index = 0;
+
+    function updateTypingText() {
+      const [line1, line2] = phrases[index];
+      typingBox.innerHTML = `<span>${line1}</span><span>${line2}</span>`;
+      const spans = typingBox.querySelectorAll('span');
+      spans.forEach((span, i) => {
+        span.style.opacity = 0;
+        span.style.transform = 'translateY(20px)';
+        span.style.animation = 'fadeInUp 0.8s ease forwards';
+        span.style.animationDelay = `${0.4 + i * 0.4}s`;
+      });
+      index = (index + 1) % phrases.length;
+    }
+
+    updateTypingText();
+    setInterval(updateTypingText, 3000);
+  </script>
+</body>
+</html>
