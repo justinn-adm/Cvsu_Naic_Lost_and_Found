@@ -18,11 +18,11 @@ $stmt->bind_result($profile_img, $username);
 $stmt->fetch();
 $stmt->close();
 
-/* ✅ Fetch the 2 most recent lost items */
+/* ✅ Fetch recent lost items */
 $lost_query = "SELECT id, description, image_path, claimed FROM lost_items ORDER BY id DESC LIMIT 2";
 $recent_lost = $conn->query($lost_query);
 
-/* ✅ Fetch the most recent claimed item from found_items table */
+/* ✅ Fetch recent claimed item */
 $claimed_query = "SELECT id, item_name, image_path FROM found_items WHERE claimed = 1 ORDER BY id DESC LIMIT 1";
 $recent_claimed = $conn->query($claimed_query);
 ?>
@@ -40,7 +40,7 @@ $recent_claimed = $conn->query($claimed_query);
   font-family: 'Inter', sans-serif;
 }
 body {
-  background: linear-gradient(135deg, #f9f6ff, #f0eaff);
+  background: linear-gradient(135deg, #f9f6ff, #f0eaff);  
   color: #333;
   height: 100vh;
   overflow: hidden;
@@ -73,51 +73,158 @@ nav .logo {
 
 nav ul {
   display: flex; list-style: none; gap: 25px; align-items: center;
-  position: relative;
 }
 
 nav ul li {
   position: relative;
+  padding-bottom: 15px; /* smooth hover area */
+}
+<?php
+session_start();
+include 'db.php';
+
+if (!isset($_SESSION['user_id'])) {
+  header("Location: SignIn_SignUp.html");
+  exit();
+}
+
+$user_id = $_SESSION['user_id'];
+
+// Fetch user info
+$sql = "SELECT profile_img, username FROM users WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$stmt->bind_result($profile_img, $username);
+$stmt->fetch();
+$stmt->close();
+
+/* ✅ Fetch recent lost items */
+$lost_query = "SELECT id, description, image_path, claimed FROM lost_items ORDER BY id DESC LIMIT 2";
+$recent_lost = $conn->query($lost_query);
+
+/* ✅ Fetch recent claimed item */
+$claimed_query = "SELECT id, item_name, image_path FROM found_items WHERE claimed = 1 ORDER BY id DESC LIMIT 1";
+$recent_claimed = $conn->query($claimed_query);
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lost & Found Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+* {
+  margin: 0; padding: 0; box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+}
+body {
+  background: linear-gradient(135deg, #f9f6ff, #f0eaff);  
+  color: #333;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* HEADER */
+nav {
+  width: 100%;
+  background: linear-gradient(90deg, #a55bff, #b46aff, #c48aff);
+  padding: 15px 60px;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: fixed;
+  top: 0; left: 0;
+  z-index: 100;
+  border-bottom-left-radius: 25px;
+  border-bottom-right-radius: 25px;
+}
+
+/* Logo styling */
+nav .logo {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Adjust nav list to appear slightly lower for balance */
+nav ul {
+  display: flex;
+  list-style: none;
+  gap: 30px;
+  align-items: center;
+  position: relative;
+  top: 3px; /* moves links a little lower visually */
+}
+
+nav ul li {
+  position: relative;
+  padding-bottom: 15px; /* smooth hover area */
 }
 
 nav ul li a {
-  text-decoration: none; color: #fff; font-weight: 800;
-  font-size: 1rem; padding: 8px 14px; border-radius: 8px;
+  text-decoration: none; 
+  color: #fff; 
+  font-weight: 700;
+  font-size: 1rem; 
+  padding: 6px 17px; 
+  border-radius: 8px;
   transition: 0.3s ease;
 }
 nav ul li a:hover {
   background: rgba(255, 255, 255, 0.25);
 }
 
-/* Dropdown Menu */
+/* ======= DROPDOWN (hover fixed + better position) ======= */
 .dropdown-content {
-  display: none;
+  display: flex;
+  flex-direction: row;
   position: absolute;
-  background: #fff;
-  min-width: 180px;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-  border-radius: 10px;
-  top: 40px;
-  left: 0;
-  overflow: hidden;
-  z-index: 999;
-}
-.dropdown-content a {
-  color: #6a2aff;
-  padding: 10px 15px;
-  text-decoration: none;
-  display: block;
-  transition: 0.3s;
-  font-weight: 600;
-}
-.dropdown-content a:hover {
-  background: rgba(140, 82, 255, 0.1);
-}
-nav ul li:hover .dropdown-content {
-  display: block;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  opacity: 0;
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 40px;
+  padding: 8px 12px;
+  box-shadow: 0 6px 20px rgba(140, 82, 255, 0.25);
+  pointer-events: none;
+  transition: all 0.35s ease;
+  backdrop-filter: blur(8px);
+  min-width: max-content;
 }
 
-/* Logout */
+.dropdown-content a {
+  color: #6a2aff;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.dropdown-content a:hover {
+  background: linear-gradient(90deg, #a55bff, #c48aff);
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(140, 82, 255, 0.25);
+}
+
+/* Hover stays active */
+nav ul li:hover .dropdown-content,
+.dropdown-content:hover {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+/* Logout button */
 nav .logout {
   background: #fff;
   color: #a55bff;
@@ -224,7 +331,7 @@ nav .logout:hover {
 .card {
   background: linear-gradient(145deg, #ffffff, #f2eaff);
   border-radius: 18px;
-  padding: 25px;
+  padding: 20px;
   text-align: center;
   box-shadow: 0 6px 15px rgba(140,82,255,0.1);
   transition: all 0.3s ease;
@@ -237,18 +344,18 @@ nav .logout:hover {
 
 .card img {
   width: 100%;
-  height: 180px;
+  height: 160px;
   border-radius: 12px;
   object-fit: cover;
   background: #ddd;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .card h3 {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #4b0082;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .status {
@@ -259,7 +366,7 @@ nav .logout:hover {
   font-weight: 600;
   border-radius: 30px;
   padding: 6px 12px;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
 }
 .status.missing {
   color: #b94cff;
@@ -275,8 +382,8 @@ nav .logout:hover {
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 10px 16px;
-  margin-top: 10px;
+  padding: 8px 14px;
+  margin-top: 8px;
   cursor: pointer;
   font-weight: 600;
   transition: 0.3s;
@@ -294,23 +401,27 @@ nav .logout:hover {
   <div class="logo">Lost & Found</div>
   <ul>
     <li><a href="home.php">Home</a></li>
-    <li>
+
+    <li class="dropdown">
       <a href="#">Claim Items ▾</a>
       <div class="dropdown-content">
         <a href="items.php">Lost Items</a>
         <a href="found_items.php">Found Items</a>
       </div>
     </li>
-    <li>
+
+    <li class="dropdown">
       <a href="#">Post Items ▾</a>
       <div class="dropdown-content">
         <a href="post_lost_item.php">Post Lost Item</a>
         <a href="post_found_item.php">Post Found Item</a>
       </div>
     </li>
+
     <li><a href="my_claims.php">My Claims</a></li>
     <li><a href="notifications.php">Notifications</a></li>
   </ul>
+
   <div class="logout" id="logoutBtn">
     <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
   </div>
