@@ -7,13 +7,13 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// protect admin route
+// Protect admin route
 if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
     header("Location: login.php");
     exit();
 }
 
-// handle logout in same file
+// Handle logout
 if (isset($_GET['logout'])) {
     session_unset();
     session_destroy();
@@ -146,15 +146,15 @@ if (isset($_GET['logout'])) {
     <div class="profile">
       <img src="tin.jpg" alt="Admin" />
       <div>
-        <span id="username-Container"></span><br/>
+        <span id="username-Container"><?php echo htmlspecialchars($_SESSION["username"]); ?></span><br/>
         <small style="color: #55efc4">● Admin</small>
       </div>
     </div>
 
     <nav>
       <a href="#" class="active" id="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-      <a href="#" id="post_found_items"><i class="fas fa-image"></i> Post Items</a>
-      <a href="#" id="manage_items"><i class="fas fa-boxes"></i> Manage Items</a> <!-- ✅ NEW SECTION -->
+      <a href="#" id="post_found_item"><i class="fas fa-image"></i> Post Items</a>
+      <a href="#" id="manage_items"><i class="fas fa-boxes"></i> Manage Items</a>
       <a href="#" id="user_management"><i class="fas fa-users-cog"></i> User Management</a>
       <a href="#" id="manage_claims"><i class="fas fa-check-circle"></i> Manage Claims</a>
       <a href="?logout=true" id="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
@@ -165,34 +165,38 @@ if (isset($_GET['logout'])) {
   <iframe src="dashboard.php" id="main-content" class="fade"></iframe>
 
   <script>
-    document.getElementById('username-Container').innerHTML = '<?php echo $_SESSION["username"]; ?>';
+    const iframe = document.getElementById("main-content");
+    const navLinks = document.querySelectorAll(".sidebar nav a");
 
-    function loadPage(linkId, page, navLinks) {
-      document.getElementById(linkId).addEventListener('click', function(e) {
+    const pages = {
+      dashboard: "dashboard.php",
+      post_found_item: "post_found_item.php",
+      manage_items: "admin_items.php",
+      user_management: "user_management.php",
+      manage_claims: "admin_claims.php"
+    };
+
+    navLinks.forEach(link => {
+      link.addEventListener("click", function(e) {
+        const id = this.id;
+        if (id === "logout") return; // skip logout link
         e.preventDefault();
-        const iframe = document.getElementById('main-content');
-        iframe.classList.remove('fade');
+
+        navLinks.forEach(l => l.classList.remove("active"));
+        this.classList.add("active");
+
+        iframe.classList.remove("fade");
         void iframe.offsetWidth;
-        iframe.src = page;
-        iframe.classList.add('fade');
-
-        navLinks.forEach(l => l.classList.remove('active'));
-        this.classList.add('active');
+        iframe.src = pages[id] || "dashboard.php";
+        iframe.classList.add("fade");
       });
-    }
-
-    const navLinks = document.querySelectorAll('.sidebar nav a');
-    loadPage('dashboard', 'dashboard.php', navLinks);
-    loadPage('post_items', 'post_items.html', navLinks);
-    loadPage('manage_items', 'admin_items.php', navLinks); // ✅ load Manage Items
-    loadPage('user_management', 'user_management.php', navLinks);
-    loadPage('manage_claims', 'admin_claims.php', navLinks);
+    });
 
     // Logout confirmation
-    document.getElementById('logout').addEventListener('click', function(e) {
+    document.getElementById("logout").addEventListener("click", function(e) {
       e.preventDefault();
       if (confirm("Are you sure you want to logout?")) {
-        window.location.href = this.getAttribute('href');
+        window.location.href = this.getAttribute("href");
       }
     });
   </script>
