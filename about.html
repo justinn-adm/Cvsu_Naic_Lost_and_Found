@@ -1,182 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>About Us - CvSU Naic Lost and Found</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Luckiest+Guy&family=Poppins:wght@600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>About Us Content</title>
+  <link href="https://fonts.googleapis.com/css2?family=Agrandir:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0; padding: 0; box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: url('purple.png') no-repeat center/cover;
-   
-      height: 100vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-     
-    }
-
-    h1 {
-      font-family: 'Luckiest Guy', cursive;
-      color: #000000;
-      font-size: 3rem;
-      letter-spacing: 2px;
-      margin-bottom: 10px;
-      text-shadow: 2px 3px 8px rgba(0, 0, 0, 0.3);
-      animation: fadeInDown 1.2s ease forwards;
-    }
-
-    p.tagline {
-      font-family: 'Poppins', sans-serif;
-      color: #000000;
-      font-size: 1.2rem;
-      margin-bottom: 50px;
-      animation: fadeInUp 1.4s ease forwards;
-    }
-
-    .members {
-      display: flex;
-      justify-content: center;
-      gap: 50px;
-      flex-wrap: wrap;
-      max-width: 1000px;
-    }
-
-    .member {
-      background: rgba(255, 255, 255, 0.25);
-      border-radius: 20px;
-      padding: 30px;
-      text-align: center;
-      width: 280px;
-      backdrop-filter: blur(10px);
-      transition: transform 0.4s ease, box-shadow 0.4s ease;
-      animation: fadeInUp 1.2s forwards;
-      opacity: 0;
-    }
-
-    .member:nth-child(1) { animation-delay: 0.2s; }
-    .member:nth-child(2) { animation-delay: 0.4s; }
-    .member:nth-child(3) { animation-delay: 0.6s; }
-
-    .member:hover {
-      transform: translateY(-8px) scale(1.03);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-    }
-
-    .member img {
-      width: 130px;
-      height: 130px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid #fff;
-      margin-bottom: 20px;
-      transition: transform 0.3s ease;
-    }
-
-    .member:hover img {
-      transform: scale(1.05);
-    }
-
-    .member h2 {
-      font-family: 'Poppins', sans-serif;
-      font-size: 1.3rem;
-      color: #000;
-      margin-bottom: 8px;
-    }
-
-    .member p {
-      color: #111;
-      font-size: 0.95rem;
-      margin-bottom: 10px;
-    }
-
-    .contact-number {
-      color: #000;
-      background: rgba(255, 255, 255, 0.5);
-      padding: 6px 12px;
-      border-radius: 15px;
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-
-    footer {
-      position: absolute;
-      bottom: 15px;
-      color: #fff;
-      font-size: 0.9rem;
-      font-family: 'Inter', sans-serif;
-      opacity: 0.8;
-    }
-
-    @keyframes fadeInUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-      from {
-        opacity: 0;
-        transform: translateY(40px);
-      }
-    }
-
-    @keyframes fadeInDown {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-      from {
-        opacity: 0;
-        transform: translateY(-40px);
-      }
-    }
-
-    @media (max-width: 700px) {
-      h1 {
-        font-size: 2.2rem;
-      }
-      .members {
-        flex-direction: column;
-        align-items: center;
-        gap: 25px;
-      }
-    }
+    body { font-family: 'Agrandir', sans-serif; color:#000; background:transparent; margin:20px; }
+    h1 { font-size:3rem; font-weight:800; text-align:center; margin-bottom:20px; }
+    p.subtitle { font-size:1.2rem; text-align:center; margin-bottom:50px; }
+    .members { display:flex; flex-wrap:wrap; justify-content:center; gap:30px; }
+    .member { background: rgba(255,255,255,0.15); backdrop-filter:blur(14px); border-radius:20px; padding:20px; width:250px; text-align:center; box-shadow:0 8px 25px rgba(0,0,0,0.15); }
+    .member img { width:120px; height:120px; border-radius:50%; margin-bottom:15px; }
+    .member h3 { font-size:1.3rem; margin-bottom:5px; }
+    .member p { font-size:1rem; margin-bottom:8px; }
+    .contact-number { font-size:0.9rem; padding:5px 12px; background:rgba(255,255,255,0.3); border-radius:12px; display:inline-block; }
   </style>
 </head>
 <body>
 
-  <h1>Meet the Team</h1>
-  <p class="tagline">The creative minds behind CvSU Naic Lost and Found</p>
+<h1>WHO ARE WE</h1>
+<p class="subtitle">We are a passionate team dedicated to making the CvSU Naic Lost and Found system more reliable, secure, and user-friendly. Our mission is to ensure your lost items find their way back to you efficiently.</p>
 
-  <div class="members">
-    <div class="member">
-      <img src="tin.jpg" alt="Justinn Modrigo">
-      <h2>Justinn Modrigo</h2>
-      <p>"GE, TO"</p>
-      <div class="contact-number">0993 980 0322</div>
-    </div>
-    <div class="member">
-      <img src="carl.jpg" alt="Carl Datan">
-      <h2>Carl Datan</h2>
-      <p>WHOOOOOOOOOOP</p>
-      <div class="contact-number">0998 765 4321</div>
-    </div>
-    <div class="member">
-      <img src="kris.jpg" alt="Kris Jan Shingo">
-      <h2>Kris Jan Shingo</h2>
-      <p>BOY YAWAK in da hauzz</p>
-      <div class="contact-number">0901 122 3344</div>
-    </div>
+<div class="members">
+  <div class="member">
+    <img src="tin.jpg" alt="Justinn Modrigo">
+    <h3>Justinn Modrigo</h3>
+    <p>Frontend Developer & UX Designer</p>
+    <div class="contact-number">0993 980 0322</div>
   </div>
-
-  <footer>
-    &copy; 2025 CvSU Naic Lost and Found. All rights reserved.
-  </footer>
+  <div class="member">
+    <img src="carl.jpg" alt="Carl Datan">
+    <h3>Carl Datan</h3>
+    <p>Backend Developer</p>
+    <div class="contact-number">0998 765 4321</div>
+  </div>
+  <div class="member">
+    <img src="kris.jpg" alt="Kris Jan Shingo">
+    <h3>Kris Jan Shingo</h3>
+    <p>Database & Systems Administrator</p>
+    <div class="contact-number">0901 122 3344</div>
+  </div>
+</div>
 
 </body>
 </html>
