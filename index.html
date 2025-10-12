@@ -25,10 +25,7 @@
       transition: opacity 1s ease, transform 1s ease;
     }
 
-    body.loaded {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    body.loaded { opacity: 1; transform: translateY(0); }
 
     /* HEADER */
     header {
@@ -43,6 +40,10 @@
       display: flex;
       align-items: center;
       gap: 14px;
+      opacity: 0;
+      transform: translateX(-50px);
+      animation: slideInLeft 1s forwards;
+      animation-delay: 0.3s;
     }
 
     .navbar-title img {
@@ -58,17 +59,23 @@
       letter-spacing: 0.5px;
     }
 
+    nav {
+      display: flex;
+      gap: 40px;
+    }
+
     nav a {
       text-decoration: none;
       color: #000;
       font-weight: 800;
       font-size: 1.05rem;
-      margin-left: 80px;
       position: relative;
       transition: all 0.3s ease;
       letter-spacing: 0.6px;
       text-transform: uppercase;
       cursor: pointer;
+      opacity: 0;
+      transform: translateY(-20px);
     }
 
     nav a::after {
@@ -124,7 +131,7 @@
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 25px;
       margin: 0 auto 40px auto;
-      perspective: 1000px; /* For 3D effect */
+      perspective: 1000px;
     }
 
     .card {
@@ -132,13 +139,13 @@
       border-radius: 20px;
       padding: 30px 20px;
       color: #000;
-      transition: all 0.3s ease;
       cursor: pointer;
       border: 1px solid transparent;
       transform-style: preserve-3d;
       backface-visibility: hidden;
-      transform: rotateY(90deg); /* Start rotated */
+      transform: rotateY(90deg);
       opacity: 0;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border 0.25s ease;
     }
 
     .card.visible {
@@ -148,9 +155,9 @@
     }
 
     .card:hover {
-      transform: translateY(-8px);
+      transform: rotateY(0deg) scale(1.05) translateY(-8px) rotateX(5deg) rotateZ(2deg);
       border: 1px solid #a855f7;
-      box-shadow: 0 6px 15px rgba(147, 51, 234, 0.15);
+      box-shadow: 0 12px 25px rgba(147, 51, 234, 0.3), 0 0 20px rgba(168,85,247,0.2);
     }
 
     .card i { font-size: 2rem; margin-bottom: 10px; }
@@ -172,6 +179,10 @@
       position: relative;
       overflow: hidden;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
+      opacity:0;
+      transform: translateY(20px);
+      animation: slideInBottom 0.8s forwards;
+      animation-delay: 1.5s;
     }
 
     .login-button:hover {
@@ -179,41 +190,9 @@
       box-shadow: 0 12px 28px rgba(147,51,234,0.5), 0 0 50px rgba(168,85,247,0.35);
     }
 
-    .login-button::before {
-      content:"";
-      position:absolute;
-      top:0; left:-100%;
-      width:200%; height:100%;
-      background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
-      transition:0.5s;
-    }
-
-    .login-button:hover::before { left:100%; }
-
-    /* FAQ STYLES */
-    .faq-section {
-      background: transparent;
-      border-radius: 20px;
-      padding: 40px;
-      margin-top: 20px;
-      text-align: left;
-      animation: fadeInUp 0.6s ease;
-      color: #fff;
-      max-height: calc(100vh - 100px);
-      overflow-y: auto;
-    }
-
-    .faq-section h2 {
-      text-align: center;
-      color: #fff;
-      margin-bottom: 30px;
-      font-size: 2rem;
-      font-weight: 800;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    }
-
-    .faq-section h3 { color: #f0f0f0; margin-top: 20px; }
-    .faq-section p { margin-top: 10px; color: #eaeaea; line-height: 1.6; }
+    @keyframes slideInLeft { to { opacity:1; transform: translateX(0); } }
+    @keyframes slideInRight { to { opacity:1; transform: translateY(0); } }
+    @keyframes slideInBottom { to { opacity:1; transform: translateY(0); } }
 
     @media (max-width:768px){
       header { flex-direction: column; text-align:center; gap:10px; }
@@ -227,7 +206,6 @@
 
 <body>
 
-<!-- HEADER -->
 <header>
   <div class="navbar-title">
     <img src="images/logo.png" alt="CvSU Logo">
@@ -240,19 +218,34 @@
   </nav>
 </header>
 
-<!-- MAIN CONTENT -->
 <div class="main-container" id="mainContent"></div>
 
 <script>
-  // Page load animation
   window.addEventListener("load", () => {
     document.body.classList.add("loaded");
-    animateCards(); // trigger card flip animation
+
+    // Animate navbar-title
+    const navbarTitle = document.querySelector(".navbar-title");
+    navbarTitle.style.animation = "slideInLeft 1s forwards";
+
+    // Animate nav links sequentially
+    const navLinks = document.querySelectorAll("nav a");
+    navLinks.forEach((link, i) => {
+      link.style.animation = `slideInRight 0.8s forwards`;
+      link.style.animationDelay = `${0.5 + i*0.2}s`;
+    });
+
+    // Animate login button
+    const loginBtn = document.querySelector(".login-button");
+    if (loginBtn) {
+      loginBtn.style.animation = `slideInBottom 0.8s forwards`;
+      loginBtn.style.animationDelay = "1.5s";
+    }
+
+    animateCards();
   });
 
   const mainContent = document.getElementById("mainContent");
-
-  // Original content HTML
   const originalContent = `
     <div class="typing-box" id="typingBox">
       <h1 id="typingText">
@@ -284,19 +277,13 @@
       <button class="login-button">Log in</button>
     </a>
   `;
-
   mainContent.innerHTML = originalContent;
 
   // Typing animation
   const phrases = [
-    ["Looking For", "Something?"],
-    ["Lost an", "Item?"],
-    ["Found", "Something?"],
-    ["Need to Report", "a Loss?"],
-    ["Reclaim Your", "Belongings?"],
-    ["Help Us Return", "Items!"]
+    ["Looking For", "Something?"], ["Lost an", "Item?"], ["Found", "Something?"],
+    ["Need to Report", "a Loss?"], ["Reclaim Your", "Belongings?"], ["Help Us Return", "Items!"]
   ];
-
   let index = 0;
   function updateTypingText() {
     const typingBox = document.getElementById("typingText");
@@ -319,13 +306,11 @@
   function animateCards() {
     const cards = document.querySelectorAll(".card");
     cards.forEach((card, i) => {
-      setTimeout(() => {
-        card.classList.add("visible");
-      }, i * 200); // stagger the animation
+      setTimeout(() => card.classList.add("visible"), i*200);
     });
   }
 
-  // Navigation links
+  // Nav link navigation logic with iframe intact
   document.querySelectorAll("nav a").forEach(link => {
     link.addEventListener("click", e => {
       e.preventDefault();
@@ -337,22 +322,9 @@
           mainContent.innerHTML = originalContent;
           updateTypingText();
           animateCards();
-        } else if (target === "faq.html") {
-          fetch("faq.html")
-            .then(res => res.text())
-            .then(html => {
-              const parser = new DOMParser();
-              const doc = parser.parseFromString(html, "text/html");
-              const faqContent = doc.body.innerHTML;
-              mainContent.innerHTML = `<div class="faq-section">${faqContent}</div>`;
-            })
-            .catch(() => {
-              mainContent.innerHTML = `<p style="color:red;">Failed to load FAQ content.</p>`;
-            });
         } else {
           mainContent.innerHTML = `<iframe src="${target}" style="width:100%; height:80vh; border:none; background:transparent;" allowtransparency="true"></iframe>`;
         }
-
         mainContent.classList.remove("fade-out");
         mainContent.classList.add("fade-in");
         setTimeout(() => mainContent.classList.remove("fade-in"), 600);
