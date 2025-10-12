@@ -2,19 +2,14 @@
 session_start();
 include 'db.php';
 
-// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: index.html");
     exit();
 }
 
 $user_id = $_SESSION['user_id'];
-
-// Verify that user exists in the database
 $result = $conn->query("SELECT id FROM users WHERE id = $user_id");
-if ($result->num_rows == 0) {
-    die("Error: Logged-in user does not exist in the database.");
-}
+if ($result->num_rows == 0) die("Error: Logged-in user does not exist.");
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $item_name   = trim($_POST['item_name']);
@@ -23,21 +18,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $date_found  = $_POST['date_found'];
     $anonymous   = isset($_POST['anonymous']) ? 1 : 0;
 
-    // Handle file upload
     $image_path = "";
     if (!empty($_FILES["item_image"]["name"])) {
         $target_dir = "uploads/";
-        if (!is_dir($target_dir)) {
-            mkdir($target_dir, 0777, true);
-        }
+        if (!is_dir($target_dir)) mkdir($target_dir, 0777, true);
         $image_path = $target_dir . time() . "_" . basename($_FILES["item_image"]["name"]);
-
-        if (!move_uploaded_file($_FILES["item_image"]["tmp_name"], $image_path)) {
-            die("Error uploading file.");
-        }
+        if (!move_uploaded_file($_FILES["item_image"]["tmp_name"], $image_path)) die("Error uploading file.");
     }
 
-    // Prepare and execute SQL safely
     $sql = "INSERT INTO found_items (user_id, item_name, description, location, date_found, image_path, anonymous) 
             VALUES (?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
@@ -46,9 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if ($stmt->execute()) {
         echo "<script>alert('Found item reported successfully!'); window.location.href='found_items.php';</script>";
         exit();
-    } else {
-        die("Error reporting found item: " . $stmt->error);
-    }
+    } else die("Error: " . $stmt->error);
 }
 ?>
 <!DOCTYPE html>
@@ -57,88 +43,110 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Report Found Item</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-    body {
-        font-family: 'Poppins', sans-serif;
-        background: linear-gradient(135deg, #00c6ff, #0072ff, #92fe9d);
-        background-size: 400% 400%;
-        animation: gradientBG 12s ease infinite;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-    }
-    @keyframes gradientBG {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #e4e7eb; /* softer gray background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 15px;
+}
+
+.form-container {
+    background: #fdfdfd; /* subtle off-white */
+    border-radius: 14px;
+    padding: 28px 22px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.form-container h2 {
+    text-align: center;
+    margin-bottom: 24px;
+    font-weight: 600;
+    font-size: 1.6rem; /* slightly bigger heading */
+    color: #1f2937; /* darker gray for elegance */
+}
+
+.form-group {
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-size: 0.88rem;
+    color: #4b5563;
+    margin-bottom: 4px;
+}
+
+.form-group input,
+.form-group textarea {
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #1f2937;
+    background: #f9fafc;
+    transition: 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 4px rgba(59,130,246,0.3);
+    outline: none;
+}
+
+.form-group textarea {
+    resize: none;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.form-check input {
+    width: 16px;
+    height: 16px;
+}
+
+.form-check label {
+    font-size: 0.88rem;
+    color: #4b5563;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 11px;
+    border: none;
+    border-radius: 10px;
+    background: #3b82f6;
+    color: #fff;
+    font-size: 0.96rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.submit-btn:hover {
+    background: #2563eb;
+}
+
+/* Mobile adjustments */
+@media (max-width: 400px) {
     .form-container {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(15px);
-        border-radius: 15px;
-        padding: 30px;
-        width: 100%;
-        max-width: 450px;
-        color: #fff;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        padding: 22px 16px;
     }
-    .form-container h2 {
-        text-align: center;
-        margin-bottom: 20px;
-        font-weight: 600;
-    }
-    .form-group {
-        margin-bottom: 15px;
-    }
-    .form-group label {
-        display: block;
-        margin-bottom: 6px;
-        font-size: 0.9rem;
-    }
-    .form-group input, .form-group textarea {
-        width: 100%;
-        padding: 10px;
-        border: none;
-        border-radius: 8px;
-        background: rgba(255,255,255,0.15);
-        color: #fff;
-        font-size: 1rem;
-    }
-    .form-group input[type="file"] {
-        padding: 4px;
-    }
-    .form-group input:focus, .form-group textarea:focus {
-        outline: 2px solid #00ffc6;
-    }
-    .form-check {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 10px;
-    }
-    .form-check input {
-        transform: scale(1.2);
-    }
-    .submit-btn {
-        width: 100%;
-        padding: 12px;
-        border: none;
-        border-radius: 10px;
-        background: linear-gradient(135deg, #00c6ff, #0072ff, #00ffc6);
-        color: #fff;
-        font-weight: bold;
-        cursor: pointer;
-        transition: 0.3s ease;
-        font-size: 1rem;
-        margin-top: 10px;
-    }
-    .submit-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-    }
+}
 </style>
 </head>
 <body>
@@ -151,7 +159,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </div>
         <div class="form-group">
             <label for="description">Description</label>
-            <textarea id="description" name="description" rows="3" required></textarea>
+            <textarea id="description" name="description" rows="2" required></textarea>
         </div>
         <div class="form-group">
             <label for="location">Location Found</label>
