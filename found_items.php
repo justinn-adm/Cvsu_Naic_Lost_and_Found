@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// Get total items
+// Get total found items
 $query = "SELECT COUNT(*) AS total FROM found_items";
 $result = $conn->query($query);
 $total_items = ($result && $row = $result->fetch_assoc()) ? $row['total'] : 0;
@@ -17,133 +17,179 @@ $total_items = ($result && $row = $result->fetch_assoc()) ? $row['total'] : 0;
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Found Items</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  <style>
-    body {
-      background: linear-gradient(180deg, #f9fafc 0%, #eef1f5 100%);
-      font-family: 'Inter', sans-serif;
-      color: #333;
-    }
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
-    .page-header h4 { font-weight: 700; }
-    .items-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 24px;
-    }
-    .item-card {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      padding: 12px;
-      text-align: center;
-      position: relative;
-      transition: all 0.3s ease;
-      cursor: pointer;
-    }
-    .item-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    }
-    .item-card img {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 10px;
-    }
-    .item-card p {
-      margin: 0;
-      font-weight: 600;
-      color: #222;
-    }
-    .poster-info {
-      font-size: 0.85rem;
-      color: #555;
-      margin-top: 4px;
-    }
-    .status-badge {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      padding: 5px 10px;
-      border-radius: 8px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #fff;
-    }
-    .status-claimed { background: #dc3545; }
-    .status-unclaimed { background: #28a745; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Found Items | CvSU Naic Lost & Found</title>
 
-    /* Modal */
-    .modal-custom {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6);
-      justify-content: center;
-      align-items: center;
-      z-index: 1050;
-      padding: 20px;
-    }
-    .modal-content-custom {
-      background: #fff;
-      padding: 25px;
-      width: 100%;
-      max-width: 550px;
-      border-radius: 16px;
-      position: relative;
-      animation: slideDown 0.35s ease;
-    }
-    @keyframes slideDown {
-      from { transform: translateY(-40px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    .modal-content-custom img {
-      width: 100%;
-      max-height: 260px;
-      object-fit: cover;
-      border-radius: 10px;
-      margin-bottom: 15px;
-    }
-    .btn-close-custom {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      background: transparent;
-      border: none;
-      font-size: 1.3rem;
-      cursor: pointer;
-    }
-    .btn-action {
-      margin: 4px 0;
-      width: 100%;
-    }
-    #proofPreview {
-      width: 100%;
-      border-radius: 8px;
-      margin-top: 10px;
-      display: none;
-    }
-  </style>
+<!-- Bootstrap & Fonts -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    background: linear-gradient(180deg, #f7f9ff 0%, #eef1f7 100%);
+    font-family: 'Inter', sans-serif;
+    color: #333;
+    padding-bottom: 40px;
+  }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 25px auto;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .page-header h4 {
+    font-weight: 700;
+    color: #4b4b4b;
+  }
+
+  .btn-back {
+    background: #7a42ff;
+    color: white;
+    border-radius: 10px;
+    font-weight: 600;
+    padding: 8px 16px;
+    transition: 0.3s;
+  }
+
+  .btn-back:hover {
+    background: #6933e3;
+    color: #fff;
+  }
+
+  .items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+  }
+
+  .item-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    padding: 12px;
+    text-align: center;
+    position: relative;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .item-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 22px rgba(0,0,0,0.15);
+  }
+
+  .item-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+
+  .item-card p {
+    margin: 0;
+    font-weight: 600;
+    color: #2d2d2d;
+  }
+
+  .poster-info {
+    font-size: 0.85rem;
+    color: #555;
+    margin-top: 4px;
+  }
+
+  .status-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .status-claimed { background: #dc3545; }
+  .status-unclaimed { background: #28a745; }
+
+  /* Modal */
+  .modal-custom {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+    padding: 20px;
+  }
+
+  .modal-content-custom {
+    background: #fff;
+    padding: 25px;
+    width: 100%;
+    max-width: 550px;
+    border-radius: 16px;
+    position: relative;
+    animation: slideDown 0.35s ease;
+  }
+
+  @keyframes slideDown {
+    from { transform: translateY(-40px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .modal-content-custom img {
+    width: 100%;
+    max-height: 260px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 15px;
+  }
+
+  .btn-close-custom {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+  }
+
+  .btn-action {
+    margin: 4px 0;
+    width: 100%;
+  }
+
+  #proofPreview {
+    width: 100%;
+    border-radius: 8px;
+    margin-top: 10px;
+    display: none;
+  }
+
+  footer {
+    margin-top: 40px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #777;
+  }
+</style>
 </head>
 <body>
 
 <div class="container py-4">
   <div class="page-header">
-    <a href="lost.php" class="btn btn-outline-dark"><i class="fa fa-arrow-left"></i> Back</a>
-    <h4 class="mb-0">Total Found Items: <span class="text-primary fw-bold"><?= $total_items; ?></span></h4>
+    <a href="lost.php" class="btn btn-back"><i class="fa fa-arrow-left"></i> Back</a>
+    <h4>Total Found Items: <span class="text-primary fw-bold"><?= $total_items; ?></span></h4>
   </div>
 
   <div class="items-grid">
@@ -157,7 +203,6 @@ $total_items = ($result && $row = $result->fetch_assoc()) ? $row['total'] : 0;
         f.date_found,
         f.image_path,
         f.anonymous,
-        f.claimed,
         f.user_id AS poster_id,
         u.username
       FROM found_items f
@@ -169,9 +214,24 @@ $total_items = ($result && $row = $result->fetch_assoc()) ? $row['total'] : 0;
     if ($result && $result->num_rows > 0):
       while ($row = $result->fetch_assoc()):
         $poster_name = ($row['anonymous'] == 1) ? "Anonymous" : htmlspecialchars($row['username']);
-        $badge_class = ($row['claimed'] == 1) ? "status-claimed" : "status-unclaimed";
-        $badge_text = ($row['claimed'] == 1) ? "Claimed" : "Unclaimed";
-        $can_claim = ($row['poster_id'] != $user_id && $row['claimed'] == 0);
+
+        // ✅ Check if admin approved a claim for this item
+        $claim_check = $conn->prepare("SELECT status FROM claims WHERE item_id = ? AND status = 'Approved' LIMIT 1");
+        $claim_check->bind_param("i", $row['id']);
+        $claim_check->execute();
+        $claim_result = $claim_check->get_result();
+        $is_approved = ($claim_result && $claim_result->num_rows > 0);
+        $claim_check->close();
+
+        if ($is_approved) {
+          $badge_class = "status-claimed";
+          $badge_text = "Claimed";
+          $can_claim = false;
+        } else {
+          $badge_class = "status-unclaimed";
+          $badge_text = "Unclaimed";
+          $can_claim = ($row['poster_id'] != $user_id);
+        }
     ?>
     <div class="item-card" onclick="showItemDetails(
         '<?= htmlspecialchars($row['item_name']); ?>',
@@ -230,6 +290,10 @@ $total_items = ($result && $row = $result->fetch_assoc()) ? $row['total'] : 0;
     </form>
   </div>
 </div>
+
+<footer>
+  <p>&copy; <?= date("Y"); ?> CvSU Naic Lost & Found. All Rights Reserved.</p>
+</footer>
 
 <script>
 let selectedItemId = null;
