@@ -20,6 +20,14 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      opacity: 0;
+      transform: translateY(-50px);
+      transition: opacity 1s ease, transform 1s ease;
+    }
+
+    body.loaded {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     /* HEADER */
@@ -116,6 +124,7 @@
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 25px;
       margin: 0 auto 40px auto;
+      perspective: 1000px; /* For 3D effect */
     }
 
     .card {
@@ -126,6 +135,16 @@
       transition: all 0.3s ease;
       cursor: pointer;
       border: 1px solid transparent;
+      transform-style: preserve-3d;
+      backface-visibility: hidden;
+      transform: rotateY(90deg); /* Start rotated */
+      opacity: 0;
+    }
+
+    .card.visible {
+      transform: rotateY(0deg);
+      opacity: 1;
+      transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.8s ease;
     }
 
     .card:hover {
@@ -173,13 +192,15 @@
 
     /* FAQ STYLES */
     .faq-section {
-      background: transparent; /* ✅ transparent background */
+      background: transparent;
       border-radius: 20px;
       padding: 40px;
       margin-top: 20px;
       text-align: left;
       animation: fadeInUp 0.6s ease;
       color: #fff;
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
     }
 
     .faq-section h2 {
@@ -191,16 +212,8 @@
       text-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
 
-    .faq-section h3 {
-      color: #f0f0f0;
-      margin-top: 20px;
-    }
-
-    .faq-section p {
-      margin-top: 10px;
-      color: #eaeaea;
-      line-height: 1.6;
-    }
+    .faq-section h3 { color: #f0f0f0; margin-top: 20px; }
+    .faq-section p { margin-top: 10px; color: #eaeaea; line-height: 1.6; }
 
     @media (max-width:768px){
       header { flex-direction: column; text-align:center; gap:10px; }
@@ -231,6 +244,12 @@
 <div class="main-container" id="mainContent"></div>
 
 <script>
+  // Page load animation
+  window.addEventListener("load", () => {
+    document.body.classList.add("loaded");
+    animateCards(); // trigger card flip animation
+  });
+
   const mainContent = document.getElementById("mainContent");
 
   // Original content HTML
@@ -296,6 +315,16 @@
   updateTypingText();
   setInterval(updateTypingText, 3000);
 
+  // Card flip animation
+  function animateCards() {
+    const cards = document.querySelectorAll(".card");
+    cards.forEach((card, i) => {
+      setTimeout(() => {
+        card.classList.add("visible");
+      }, i * 200); // stagger the animation
+    });
+  }
+
   // Navigation links
   document.querySelectorAll("nav a").forEach(link => {
     link.addEventListener("click", e => {
@@ -307,6 +336,7 @@
         if (target === "index.html") {
           mainContent.innerHTML = originalContent;
           updateTypingText();
+          animateCards();
         } else if (target === "faq.html") {
           fetch("faq.html")
             .then(res => res.text())
