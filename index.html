@@ -137,7 +137,7 @@
     .card i { font-size: 2rem; margin-bottom: 10px; }
     .card h3 { font-size: 1.2rem; margin-bottom: 8px; font-weight:800; }
 
-    /* LOGIN BUTTON - CUTE SIZE */
+    /* LOGIN BUTTON */
     .login-button {
       display: inline-block;
       margin: 40px auto;
@@ -170,6 +170,37 @@
     }
 
     .login-button:hover::before { left:100%; }
+
+    /* FAQ STYLES */
+    .faq-section {
+      background: transparent; /* ✅ transparent background */
+      border-radius: 20px;
+      padding: 40px;
+      margin-top: 20px;
+      text-align: left;
+      animation: fadeInUp 0.6s ease;
+      color: #fff;
+    }
+
+    .faq-section h2 {
+      text-align: center;
+      color: #fff;
+      margin-bottom: 30px;
+      font-size: 2rem;
+      font-weight: 800;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .faq-section h3 {
+      color: #f0f0f0;
+      margin-top: 20px;
+    }
+
+    .faq-section p {
+      margin-top: 10px;
+      color: #eaeaea;
+      line-height: 1.6;
+    }
 
     @media (max-width:768px){
       header { flex-direction: column; text-align:center; gap:10px; }
@@ -235,7 +266,6 @@
     </a>
   `;
 
-  // Load original content on page load
   mainContent.innerHTML = originalContent;
 
   // Typing animation
@@ -266,25 +296,35 @@
   updateTypingText();
   setInterval(updateTypingText, 3000);
 
-  // Navigation links with smooth fade
+  // Navigation links
   document.querySelectorAll("nav a").forEach(link => {
     link.addEventListener("click", e => {
       e.preventDefault();
       const target = link.getAttribute("href");
-
       mainContent.classList.add("fade-out");
 
       setTimeout(() => {
-        if(target === "index.html") {
+        if (target === "index.html") {
           mainContent.innerHTML = originalContent;
           updateTypingText();
+        } else if (target === "faq.html") {
+          fetch("faq.html")
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(html, "text/html");
+              const faqContent = doc.body.innerHTML;
+              mainContent.innerHTML = `<div class="faq-section">${faqContent}</div>`;
+            })
+            .catch(() => {
+              mainContent.innerHTML = `<p style="color:red;">Failed to load FAQ content.</p>`;
+            });
         } else {
-          mainContent.innerHTML = `<iframe src="${target}" style="width:100%; height:80vh; border:none;"></iframe>`;
+          mainContent.innerHTML = `<iframe src="${target}" style="width:100%; height:80vh; border:none; background:transparent;" allowtransparency="true"></iframe>`;
         }
 
         mainContent.classList.remove("fade-out");
         mainContent.classList.add("fade-in");
-
         setTimeout(() => mainContent.classList.remove("fade-in"), 600);
       }, 500);
     });
