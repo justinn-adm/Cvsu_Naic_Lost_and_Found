@@ -18,11 +18,27 @@ $stmt->bind_result($profile_img, $username);
 $stmt->fetch();
 $stmt->close();
 
-/* ✅ Fetch recent lost items */
+/* 🔔 Fetch unread claim notifications */
+$notif_sql = "
+  SELECT COUNT(*) AS unread_count 
+  FROM claims 
+  WHERE user_id = ? 
+  AND status IN ('Approved', 'Rejected') 
+  AND is_read = 0
+";
+$stmt_notif = $conn->prepare($notif_sql);
+$stmt_notif->bind_param("i", $user_id);
+$stmt_notif->execute();
+$result_notif = $stmt_notif->get_result();
+$row_notif = $result_notif->fetch_assoc();
+$unread_count = $row_notif['unread_count'] ?? 0;
+$stmt_notif->close();
+
+/* Fetch recent lost items */
 $lost_query = "SELECT id, description, image_path, claimed FROM lost_items ORDER BY id DESC LIMIT 2";
 $recent_lost = $conn->query($lost_query);
 
-/* ✅ Fetch recent claimed item */
+/* Fetch recent claimed items */
 $claimed_query = "SELECT id, item_name, image_path FROM found_items WHERE claimed = 1 ORDER BY id DESC LIMIT 1";
 $recent_claimed = $conn->query($claimed_query);
 ?>
@@ -32,171 +48,110 @@ $recent_claimed = $conn->query($claimed_query);
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lost & Found Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<!-- Fonts & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Agrandir:wght@400;600;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <style>
 * {
   margin: 0; padding: 0; box-sizing: border-box;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Agrandir', sans-serif;
 }
 body {
-  background: linear-gradient(135deg, #f9f6ff, #f0eaff);  
+  background: linear-gradient(135deg, #f9f6ff, #f0eaff);
   color: #333;
-  height: 100vh;
+  min-height: 100vh;
   overflow: hidden;
 }
 
 /* HEADER */
 nav {
   width: 100%;
-  background: linear-gradient(90deg, #a55bff, #b46aff, #c48aff);
-  padding: 18px 60px;
-  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(90deg, #9333ea, #a855f7, #c48aff);
+  padding: 20px 60px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  position: fixed;
-  top: 0; left: 0;
-  z-index: 100;
+  align-items: center;
   border-bottom-left-radius: 25px;
   border-bottom-right-radius: 25px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
 }
 
 nav .logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-size: 1.7rem;
-  font-weight: 700;
+  font-weight: 800;
   color: #fff;
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 
-nav ul {
-  display: flex; list-style: none; gap: 25px; align-items: center;
-}
-
-nav ul li {
-  position: relative;
-  padding-bottom: 15px; /* smooth hover area */
-}
-<?php
-session_start();
-include 'db.php';
-
-if (!isset($_SESSION['user_id'])) {
-  header("Location: SignIn_SignUp.html");
-  exit();
-}
-
-$user_id = $_SESSION['user_id'];
-
-// Fetch user info
-$sql = "SELECT profile_img, username FROM users WHERE id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$stmt->bind_result($profile_img, $username);
-$stmt->fetch();
-$stmt->close();
-
-/* ✅ Fetch recent lost items */
-$lost_query = "SELECT id, description, image_path, claimed FROM lost_items ORDER BY id DESC LIMIT 2";
-$recent_lost = $conn->query($lost_query);
-
-/* ✅ Fetch recent claimed item */
-$claimed_query = "SELECT id, item_name, image_path FROM found_items WHERE claimed = 1 ORDER BY id DESC LIMIT 1";
-$recent_claimed = $conn->query($claimed_query);
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lost & Found Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<style>
-* {
-  margin: 0; padding: 0; box-sizing: border-box;
-  font-family: 'Inter', sans-serif;
-}
-body {
-  background: linear-gradient(135deg, #f9f6ff, #f0eaff);  
-  color: #333;
-  height: 100vh;
-  overflow: hidden;
-}
-
-/* HEADER */
-nav {
-  width: 100%;
-  background: linear-gradient(90deg, #a55bff, #b46aff, #c48aff);
-  padding: 15px 60px;
-  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: fixed;
-  top: 0; left: 0;
-  z-index: 100;
-  border-bottom-left-radius: 25px;
-  border-bottom-right-radius: 25px;
-}
-
-/* Logo styling */
-nav .logo {
-  font-size: 1.7rem;
-  font-weight: 700;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* Adjust nav list to appear slightly lower for balance */
 nav ul {
   display: flex;
   list-style: none;
   gap: 30px;
   align-items: center;
-  position: relative;
-  top: 3px; /* moves links a little lower visually */
 }
 
 nav ul li {
   position: relative;
-  padding-bottom: 15px; /* smooth hover area */
 }
 
 nav ul li a {
-  text-decoration: none; 
-  color: #fff; 
+  text-decoration: none;
+  color: #fff;
   font-weight: 700;
-  font-size: 1rem; 
-  padding: 6px 17px; 
+  font-size: 1rem;
+  padding: 6px 15px;
   border-radius: 8px;
-  transition: 0.3s ease;
-}
-nav ul li a:hover {
-  background: rgba(255, 255, 255, 0.25);
+  transition: all 0.3s ease;
 }
 
-/* ======= DROPDOWN (hover fixed + better position) ======= */
+nav ul li a:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+/* 🔔 Notification Badge */
+.notif-badge {
+  position: absolute;
+  top: -6px;
+  right: -12px;
+  background: #ff4757;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(0,0,0,0.2);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Dropdown */
 .dropdown-content {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   position: absolute;
   top: 100%;
   left: 50%;
   transform: translateX(-50%) translateY(10px);
   opacity: 0;
-  background: rgba(255, 255, 255, 0.97);
-  border-radius: 40px;
+  background: rgba(255,255,255,0.95);
+  border-radius: 25px;
   padding: 8px 12px;
   box-shadow: 0 6px 20px rgba(140, 82, 255, 0.25);
   pointer-events: none;
-  transition: all 0.35s ease;
-  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
   min-width: max-content;
 }
 
@@ -204,21 +159,19 @@ nav ul li a:hover {
   color: #6a2aff;
   text-decoration: none;
   font-weight: 600;
-  padding: 10px 18px;
+  padding: 8px 16px;
   border-radius: 25px;
   transition: all 0.3s ease;
   white-space: nowrap;
 }
 
 .dropdown-content a:hover {
-  background: linear-gradient(90deg, #a55bff, #c48aff);
+  background: linear-gradient(90deg, #9333ea, #c48aff);
   color: #fff;
-  box-shadow: 0 3px 10px rgba(140, 82, 255, 0.25);
+  box-shadow: 0 3px 10px rgba(140,82,255,0.2);
 }
 
-/* Hover stays active */
-nav ul li:hover .dropdown-content,
-.dropdown-content:hover {
+nav ul li:hover .dropdown-content {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
   pointer-events: auto;
@@ -227,36 +180,37 @@ nav ul li:hover .dropdown-content,
 /* Logout button */
 nav .logout {
   background: #fff;
-  color: #a55bff;
+  color: #9333ea;
   padding: 10px 22px;
   border-radius: 30px;
   font-weight: 600;
   border: 2px solid transparent;
-  transition: 0.3s;
   display: flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  transition: all 0.3s ease;
 }
 nav .logout:hover {
   background: transparent;
   color: #fff;
   border: 2px solid #fff;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 10px rgba(255,255,255,0.3);
 }
 
 /* CONTAINER */
 .container {
   max-width: 1200px;
-  margin: 130px auto 0 auto;
-  background: #ffffff;
+  margin: 140px auto 40px auto;
+  background: #fff;
   border-radius: 25px;
   padding: 40px;
-  box-shadow: 0 8px 25px rgba(140, 82, 255, 0.15);
-  height: calc(100vh - 150px);
+  box-shadow: 0 8px 25px rgba(140,82,255,0.15);
+  height: calc(100vh - 180px);
   overflow-y: auto;
 }
 
+/* Scrollbar */
 .container::-webkit-scrollbar {
   width: 6px;
 }
@@ -265,7 +219,7 @@ nav .logout:hover {
   border-radius: 10px;
 }
 
-/* TOP BAR */
+/* Top bar */
 .top-bar {
   display: flex;
   justify-content: space-between;
@@ -275,21 +229,25 @@ nav .logout:hover {
 }
 
 .top-bar h2 {
-  font-weight: 700;
+  font-weight: 800;
   font-size: 1.7rem;
   color: #6a2aff;
 }
 
-.top-bar .user {
-  display: flex; align-items: center; gap: 12px;
-}
-
+/* Profile Image */
 .top-bar .user img {
-  width: 55px; height: 55px;
+  width: 55px;
+  height: 55px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #a55bff;
-  box-shadow: 0 0 10px rgba(140, 82, 255, 0.3);
+  border: 2px solid #9333ea;
+  box-shadow: 0 0 10px rgba(147,51,234,0.3);
+  cursor: pointer;
+  transition: 0.3s;
+}
+.top-bar .user img:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 15px rgba(147,51,234,0.5);
 }
 
 /* Search Bar */
@@ -297,21 +255,20 @@ nav .logout:hover {
   margin-top: 20px;
   display: flex;
   justify-content: center;
-  align-items: center;
   gap: 10px;
 }
 .search-bar input {
   width: 60%;
   padding: 10px 15px;
-  border-radius: 20px;
-  border: 2px solid #a55bff;
+  border-radius: 25px;
+  border: 2px solid #9333ea;
   outline: none;
 }
 .search-bar button {
-  background: linear-gradient(90deg, #a55bff, #c48aff);
+  background: linear-gradient(90deg, #9333ea, #a855f7);
   border: none;
   padding: 10px 20px;
-  border-radius: 20px;
+  border-radius: 25px;
   color: #fff;
   font-weight: 600;
   cursor: pointer;
@@ -320,7 +277,7 @@ nav .logout:hover {
   transform: scale(1.05);
 }
 
-/* CARDS */
+/* Cards */
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -370,15 +327,15 @@ nav .logout:hover {
 }
 .status.missing {
   color: #b94cff;
-  background: rgba(185, 76, 255, 0.1);
+  background: rgba(185,76,255,0.1);
 }
 .status.claimed {
   color: #2ecc71;
-  background: rgba(46, 204, 113, 0.1);
+  background: rgba(46,204,113,0.1);
 }
 
 .card button {
-  background: linear-gradient(90deg, #a55bff, #c48aff);
+  background: linear-gradient(90deg, #9333ea, #a855f7);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -394,11 +351,11 @@ nav .logout:hover {
 }
 </style>
 </head>
-
 <body>
+
 <!-- NAV -->
 <nav>
-  <div class="logo">Lost & Found</div>
+  <div class="logo">Lost and Found</div>
   <ul>
     <li><a href="home.php">Home</a></li>
 
@@ -418,8 +375,14 @@ nav .logout:hover {
       </div>
     </li>
 
-    <li><a href="my_claims.php">My Claims</a></li>
-    <li><a href="notifications.php">Notifications</a></li>
+    <li>
+      <a href="my_claims.php" style="position: relative;">
+        My Claims
+        <?php if ($unread_count > 0): ?>
+          <span class="notif-badge"><?= $unread_count ?></span>
+        <?php endif; ?>
+      </a>
+    </li>
   </ul>
 
   <div class="logout" id="logoutBtn">
@@ -432,7 +395,10 @@ nav .logout:hover {
   <div class="top-bar">
     <h2>Welcome, <?php echo htmlspecialchars($username); ?> 👋</h2>
     <div class="user">
-      <img src="images/<?php echo htmlspecialchars($profile_img); ?>" alt="Profile">
+      <img src="images/<?php echo htmlspecialchars($profile_img); ?>" 
+           alt="Profile" 
+           title="Go to My Account"
+           onclick="window.location.href='my_account.php'">
     </div>
   </div>
 
@@ -449,12 +415,8 @@ nav .logout:hover {
       <div class="card">
         <?php 
           $lost_img = $lost['image_path'];
-          if (!str_starts_with($lost_img, 'uploads/')) {
-              $lost_img = 'uploads/' . $lost_img;
-          }
-          if (!file_exists($lost_img)) {
-              $lost_img = 'images/default-placeholder.png';
-          }
+          if (!str_starts_with($lost_img, 'uploads/')) $lost_img = 'uploads/' . $lost_img;
+          if (!file_exists($lost_img)) $lost_img = 'images/default-placeholder.png';
         ?>
         <img src="<?php echo htmlspecialchars($lost_img); ?>" alt="Lost Item">
         <h3><?php echo htmlspecialchars($lost['description']); ?></h3>
@@ -470,12 +432,8 @@ nav .logout:hover {
         <div class="card">
           <?php 
             $found_img = $found['image_path'];
-            if (!str_starts_with($found_img, 'uploads/')) {
-                $found_img = 'uploads/' . $found_img;
-            }
-            if (!file_exists($found_img)) {
-                $found_img = 'images/default-placeholder.png';
-            }
+            if (!str_starts_with($found_img, 'uploads/')) $found_img = 'uploads/' . $found_img;
+            if (!file_exists($found_img)) $found_img = 'images/default-placeholder.png';
           ?>
           <p>Recently Claimed Item</p>
           <img src="<?php echo htmlspecialchars($found_img); ?>" alt="Found Item">
