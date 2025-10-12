@@ -27,7 +27,7 @@ if (isset($_GET['logout'])) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Lost & Found | Admin Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Luckiest+Guy&display=swap" rel="stylesheet">
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
@@ -35,28 +35,29 @@ if (isset($_GET['logout'])) {
     body {
       display: flex;
       height: 100vh;
-      background: #f7f9fc;
+      background: #fff; /* main background white */
       overflow: hidden;
     }
 
     /* Sidebar */
     .sidebar {
       width: 260px;
-      background: linear-gradient(180deg, #2d3436, #1e272e);
-      color: #fff;
+      background: #fff; /* sidebar white */
+      color: #2d3436;
       display: flex;
       flex-direction: column;
       padding: 20px;
-      box-shadow: 3px 0 10px rgba(0,0,0,0.1);
+      box-shadow: 3px 0 10px rgba(0,0,0,0.08);
       transition: width 0.3s ease;
     }
 
     .sidebar .logo {
+      font-family: 'Luckiest Guy', cursive;
       font-size: 1.7rem;
       font-weight: 800;
       text-align: center;
       margin-bottom: 25px;
-      color: #74b9ff;
+      color: #2d3436;
       letter-spacing: 1px;
     }
 
@@ -66,10 +67,10 @@ if (isset($_GET['logout'])) {
       margin-bottom: 30px;
       padding: 12px;
       border-radius: 12px;
-      background: rgba(255,255,255,0.05);
+      background: rgba(0,0,0,0.05);
       transition: background 0.3s ease;
     }
-    .sidebar .profile:hover { background: rgba(255,255,255,0.12); }
+    .sidebar .profile:hover { background: rgba(0,0,0,0.1); }
     .sidebar .profile img {
       width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; object-fit: cover;
       border: 2px solid #74b9ff;
@@ -81,7 +82,7 @@ if (isset($_GET['logout'])) {
       display: flex;
       align-items: center;
       text-decoration: none;
-      color: #dcdde1;
+      color: #2d3436;
       padding: 12px 15px;
       margin-bottom: 10px;
       border-radius: 10px;
@@ -102,7 +103,7 @@ if (isset($_GET['logout'])) {
       width: 100%;
       height: 100vh;
       border: none;
-      background: #fff;
+      background: #f7f9fc;
       border-radius: 15px 0 0 15px;
       box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
     }
@@ -174,14 +175,12 @@ if (isset($_GET['logout'])) {
       });
     });
 
-    // Listen for messages from iframe (e.g., card clicks)
     window.addEventListener("message", function(event){
       if(event.data && event.data.activeSidebar){
         setActiveSidebar(event.data.activeSidebar);
       }
     });
 
-    // Logout confirmation
     document.getElementById("logout").addEventListener("click", function(e){
       e.preventDefault();
       if(confirm("Are you sure you want to logout?")){
