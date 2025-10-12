@@ -97,14 +97,8 @@ if (isset($_GET['logout'])) {
       transform: translateX(6px);
     }
 
-    /* Main Content */
-    .main-content {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      background: #f7f9fc;
-    }
     iframe {
+      flex-grow: 1;
       width: 100%;
       height: 100vh;
       border: none;
@@ -113,40 +107,25 @@ if (isset($_GET['logout'])) {
       box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
     }
 
-    /* Responsive */
     @media (max-width: 768px) {
-      .sidebar {
-        width: 70px;
-        padding: 15px 10px;
-      }
-      .sidebar .logo,
-      .sidebar .profile span,
-      .sidebar small {
-        display: none;
-      }
+      .sidebar { width: 70px; padding: 15px 10px; }
+      .sidebar .logo, .sidebar .profile span, .sidebar small { display: none; }
       .sidebar nav a { justify-content: center; padding: 14px; }
       .sidebar nav a i { margin: 0; }
     }
 
-    /* Smooth animation */
-    .fade {
-      animation: fadeIn 0.4s ease;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .fade { animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity:1; transform:translateY(0); } }
   </style>
 </head>
 <body>
-  <!-- Sidebar -->
   <aside class="sidebar">
     <div class="logo">Lost & Found</div>
 
     <div class="profile">
       <img src="tin.jpg" alt="Admin" />
       <div>
-        <span id="username-Container"><?php echo htmlspecialchars($_SESSION["username"]); ?></span><br/>
+        <span><?php echo htmlspecialchars($_SESSION["username"]); ?></span><br/>
         <small style="color: #55efc4">● Admin</small>
       </div>
     </div>
@@ -161,7 +140,6 @@ if (isset($_GET['logout'])) {
     </nav>
   </aside>
 
-  <!-- Main content -->
   <iframe src="dashboard.php" id="main-content" class="fade"></iframe>
 
   <script>
@@ -176,14 +154,18 @@ if (isset($_GET['logout'])) {
       manage_claims: "admin_claims.php"
     };
 
-    navLinks.forEach(link => {
-      link.addEventListener("click", function(e) {
-        const id = this.id;
-        if (id === "logout") return; // skip logout link
-        e.preventDefault();
+    function setActiveSidebar(id){
+      navLinks.forEach(l => l.classList.remove("active"));
+      const link = document.getElementById(id);
+      if(link) link.classList.add("active");
+    }
 
-        navLinks.forEach(l => l.classList.remove("active"));
-        this.classList.add("active");
+    navLinks.forEach(link => {
+      link.addEventListener("click", function(e){
+        const id = this.id;
+        if(id === "logout") return;
+        e.preventDefault();
+        setActiveSidebar(id);
 
         iframe.classList.remove("fade");
         void iframe.offsetWidth;
@@ -192,10 +174,17 @@ if (isset($_GET['logout'])) {
       });
     });
 
+    // Listen for messages from iframe (e.g., card clicks)
+    window.addEventListener("message", function(event){
+      if(event.data && event.data.activeSidebar){
+        setActiveSidebar(event.data.activeSidebar);
+      }
+    });
+
     // Logout confirmation
-    document.getElementById("logout").addEventListener("click", function(e) {
+    document.getElementById("logout").addEventListener("click", function(e){
       e.preventDefault();
-      if (confirm("Are you sure you want to logout?")) {
+      if(confirm("Are you sure you want to logout?")){
         window.location.href = this.getAttribute("href");
       }
     });
