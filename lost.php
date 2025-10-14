@@ -57,9 +57,10 @@ body{
   color:#333;
   min-height:100vh;
   overflow-x:hidden;
+  animation: fadeInBody 1.5s ease-in-out forwards;
 }
 
-/* === NAVBAR (simple text) === */
+/* === NAVBAR === */
 nav {
   width: 100%;
   display: flex;
@@ -70,10 +71,9 @@ nav {
   left: 0;
   z-index: 100;
   background: transparent;
-  animation: fadeIn 2s ease forwards;
+  animation: slideDown 1s ease-in-out forwards;
 }
 
-/* Nav links */
 .nav-links {
   display: flex;
   align-items: center;
@@ -81,28 +81,31 @@ nav {
   position: relative;
 }
 
-.nav-item {
-  position: relative;
-}
+.nav-item { position: relative; }
 
 .nav-links a {
   text-decoration: none;
-  color: #000000ff;
+  color: #000;
   font-weight: 800;
   font-size: 1.05rem;
   transition: all 0.3s ease;
   letter-spacing: 0.6px;
   text-transform: uppercase;
   cursor: pointer;
+  opacity: 0;
+  animation: fadeUp 1s ease-in-out forwards;
 }
+.nav-links a:nth-child(1) { animation-delay: 0.6s; }
+.nav-links a:nth-child(2) { animation-delay: 0.8s; }
+.nav-links a:nth-child(3) { animation-delay: 1s; }
 
-.nav-links a:hover {
-  color: #d9b3ff;
-}
+.nav-links a:hover { color: #d9b3ff; }
 
-/* === DROPDOWN === */
+/* === DROPDOWN (SMOOTH + DELAYED CLOSE) === */
 .dropdown-content {
-  display: none;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(8px);
   position: absolute;
   top: 28px;
   left: 0;
@@ -111,9 +114,9 @@ nav {
   border-radius: 8px;
   overflow: hidden;
   min-width: 180px;
-  animation: dropdownFade 0.3s ease forwards;
+  transition: all 0.25s ease-in-out;
+  pointer-events: none;
 }
-
 .dropdown-content a {
   display: block;
   padding: 10px 15px;
@@ -123,19 +126,15 @@ nav {
   font-size: 0.9rem;
   text-transform: none;
 }
-
 .dropdown-content a:hover {
   background: linear-gradient(90deg,#9333ea,#a855f7);
   color: #fff;
 }
-
-.dropdown:hover .dropdown-content {
-  display: block;
-}
-
-@keyframes dropdownFade {
-  from {opacity: 0; transform: translateY(-5px);}
-  to {opacity: 1; transform: translateY(0);}
+.dropdown.show .dropdown-content {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 /* Logout */
@@ -150,14 +149,14 @@ nav {
   gap: 8px;
   cursor: pointer;
   transition: all 0.3s;
+  opacity: 0;
+  animation: fadeLeft 1.2s ease-in-out forwards;
+  animation-delay: 1.4s;
 }
 .logout:hover {
   transform: scale(1.05);
   box-shadow: 0 8px 20px rgba(147,51,234,0.4);
 }
-
-/* Animations */
-@keyframes fadeIn { 0%{opacity:0;}100%{opacity:1;} }
 
 /* === CONTENT === */
 .container {
@@ -167,6 +166,9 @@ nav {
   border-radius:25px;
   padding:40px;
   box-shadow:0 8px 25px rgba(140,82,255,0.25);
+  opacity: 0;
+  animation: fadeInContainer 1.5s ease-in-out forwards;
+  animation-delay: 2s;
 }
 
 .top-bar{
@@ -180,6 +182,9 @@ nav {
   font-weight:800;
   font-size:1.7rem;
   color:#6a2aff;
+  opacity:0;
+  animation: fadeRight 1s ease-in-out forwards;
+  animation-delay: 2.3s;
 }
 .top-bar .user img{
   width:55px;
@@ -189,6 +194,9 @@ nav {
   border:2px solid #9333ea;
   cursor:pointer;
   transition:.3s;
+  opacity:0;
+  animation: fadeLeft 1s ease-in-out forwards;
+  animation-delay: 2.5s;
 }
 .top-bar .user img:hover{transform:scale(1.08);}
 
@@ -198,6 +206,9 @@ nav {
   display:flex;
   justify-content:center;
   gap:10px;
+  opacity:0;
+  animation: fadeUp 1.2s ease-in-out forwards;
+  animation-delay: 2.8s;
 }
 .search-bar input{
   width:60%;
@@ -232,7 +243,12 @@ nav {
   text-align:center;
   box-shadow:0 6px 15px rgba(140,82,255,0.1);
   transition:.3s;
+  opacity:0;
+  transform:translateY(50px);
+  animation: cardAppear 1.2s ease-in-out forwards;
 }
+.card:nth-child(1){animation-delay:3.2s;}
+.card:nth-child(2){animation-delay:3.6s;}
 .card:hover{
   transform:translateY(-6px);
   box-shadow:0 12px 25px rgba(140,82,255,0.25);
@@ -277,13 +293,21 @@ nav {
   transform:scale(1.05);
   background:linear-gradient(90deg,#9244ff,#b971ff);
 }
+
+/* === KEYFRAMES === */
+@keyframes fadeInBody { from{opacity:0;} to{opacity:1;} }
+@keyframes slideDown { from{transform:translateY(-40px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(40px);} to{opacity:1;transform:translateY(0);} }
+@keyframes fadeLeft { from{opacity:0;transform:translateX(60px);} to{opacity:1;transform:translateX(0);} }
+@keyframes fadeRight { from{opacity:0;transform:translateX(-60px);} to{opacity:1;transform:translateX(0);} }
+@keyframes fadeInContainer { from{opacity:0;transform:scale(0.95);} to{opacity:1;transform:scale(1);} }
+@keyframes cardAppear { from{opacity:0;transform:translateY(60px);} to{opacity:1;transform:translateY(0);} }
 </style>
 </head>
 
 <body>
 <nav>
   <div class="nav-links">
-
     <div class="nav-item"><a href="home.php">Home</a></div>
 
     <!-- CLAIM ITEMS DROPDOWN -->
@@ -354,6 +378,18 @@ nav {
 </div>
 
 <script>
+/* Smooth delayed dropdown hover handling */
+document.querySelectorAll('.dropdown').forEach(drop => {
+  let timeout;
+  drop.addEventListener('mouseenter', () => {
+    clearTimeout(timeout);
+    drop.classList.add('show');
+  });
+  drop.addEventListener('mouseleave', () => {
+    timeout = setTimeout(() => drop.classList.remove('show'), 250);
+  });
+});
+
 function searchItems() {
   const query = document.getElementById('searchInput').value.trim();
   if (query === '') {
