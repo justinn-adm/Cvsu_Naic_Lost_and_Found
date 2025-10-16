@@ -6,63 +6,39 @@ if(!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// ======================
-// DASHBOARD STATISTICS
-// ======================
-
-// Total users
+// Dashboard Stats
 $stmt = $conn->prepare("SELECT id FROM users WHERE role='user'");
-$stmt->execute();
-$stmt->store_result();
-$users = $stmt->num_rows;
+$stmt->execute(); $stmt->store_result(); $users = $stmt->num_rows;
 
-// Total lost items
 $stmt = $conn->prepare("SELECT id FROM lost_items");
-$stmt->execute();
-$stmt->store_result();
-$total_lost = $stmt->num_rows;
+$stmt->execute(); $stmt->store_result(); $total_lost = $stmt->num_rows;
 
-// Total found items
 $stmt = $conn->prepare("SELECT id FROM found_items");
-$stmt->execute();
-$stmt->store_result();
-$total_found = $stmt->num_rows;
+$stmt->execute(); $stmt->store_result(); $total_found = $stmt->num_rows;
 
-// Pending claims (only for existing items)
 $stmt = $conn->prepare("
-    SELECT c.id 
-    FROM claims c
-    LEFT JOIN found_items f ON c.item_id = f.id
-    LEFT JOIN lost_items l ON c.item_id = l.id
-    WHERE c.status = 'pending' AND (f.id IS NOT NULL OR l.id IS NOT NULL)
+    SELECT c.id FROM claims c
+    LEFT JOIN found_items f ON c.item_id=f.id
+    LEFT JOIN lost_items l ON c.item_id=l.id
+    WHERE c.status='pending' AND (f.id IS NOT NULL OR l.id IS NOT NULL)
 ");
-$stmt->execute();
-$stmt->store_result();
-$pending_claims = $stmt->num_rows;
+$stmt->execute(); $stmt->store_result(); $pending_claims = $stmt->num_rows;
 
-// Approved claims
 $stmt = $conn->prepare("
-    SELECT c.id 
-    FROM claims c
-    LEFT JOIN found_items f ON c.item_id = f.id
-    LEFT JOIN lost_items l ON c.item_id = l.id
-    WHERE c.status = 'approved' AND (f.id IS NOT NULL OR l.id IS NOT NULL)
+    SELECT c.id FROM claims c
+    LEFT JOIN found_items f ON c.item_id=f.id
+    LEFT JOIN lost_items l ON c.item_id=l.id
+    WHERE c.status='approved' AND (f.id IS NOT NULL OR l.id IS NOT NULL)
 ");
-$stmt->execute();
-$stmt->store_result();
-$approved_claims = $stmt->num_rows;
+$stmt->execute(); $stmt->store_result(); $approved_claims = $stmt->num_rows;
 
-// Rejected claims
 $stmt = $conn->prepare("
-    SELECT c.id 
-    FROM claims c
-    LEFT JOIN found_items f ON c.item_id = f.id
-    LEFT JOIN lost_items l ON c.item_id = l.id
-    WHERE c.status = 'rejected' AND (f.id IS NOT NULL OR l.id IS NOT NULL)
+    SELECT c.id FROM claims c
+    LEFT JOIN found_items f ON c.item_id=f.id
+    LEFT JOIN lost_items l ON c.item_id=l.id
+    WHERE c.status='rejected' AND (f.id IS NOT NULL OR l.id IS NOT NULL)
 ");
-$stmt->execute();
-$stmt->store_result();
-$rejected_claims = $stmt->num_rows;
+$stmt->execute(); $stmt->store_result(); $rejected_claims = $stmt->num_rows;
 
 // Items posted per weekday
 $item_posted_per_day = array_fill(1,7,0);
@@ -81,7 +57,6 @@ while($row = $result->fetch_assoc()){
     $item_posted_per_day[$day] = $row['count'];
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -99,11 +74,12 @@ body {
 }
 
 #dashboard-content {
-    opacity:0;
+    opacity: 0;
     transform: translateY(40px);
     transition: opacity 1.2s ease, transform 1.2s ease;
 }
 
+/* Dashboard Cards */
 .dashboard {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -147,6 +123,7 @@ body {
 .card p { margin:0; font-size:1rem; color:#555; font-weight:500; }
 .card h2 { font-family:'Luckiest Guy', cursive; font-size:2rem; margin-top:10px; color:#333; }
 
+/* Charts Section */
 .charts {
     display:flex;
     flex-wrap:nowrap;
@@ -155,26 +132,50 @@ body {
     align-items:flex-start;
 }
 
-.bar-chart-container {
+.bar-charts {
     flex:2;
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+/* First Bar Chart */
+.bar-chart-container {
     background:#fff;
-    padding:20px;
+    padding:15px;
     border-radius:12px;
     box-shadow:0 4px 15px rgba(0,0,0,0.08);
-    height:430px;
+    height:230px;
     opacity:0;
     transform: translateY(60px);
     transition: opacity 1.5s ease, transform 1.5s ease;
 }
+.bar-chart-container.show {
+    opacity:1;
+    transform:translateY(0);
+}
+
+/* Smaller Second Bar Chart */
+.bar-chart-container.small {
+    height:170px;
+}
+
+.bar-chart-container canvas {
+    width:100%;
+    height:100%;
+}
+
+/* Doughnut Charts */
 .doughnuts {
     flex:1;
     display:flex;
     flex-direction:column;
     gap:15px;
-    justify-content:flex-end;
+    justify-content:flex-start;
     align-items:center;
     margin-left:20px;
 }
+
 .doughnut-container {
     background:#fff;
     padding:15px;
@@ -182,11 +183,11 @@ body {
     box-shadow:0 4px 15px rgba(0,0,0,0.08);
     width:100%;
     max-width:200px;
+    height:230px;
     opacity:0;
     transform: translateY(60px);
     transition: opacity 1.5s ease, transform 1.5s ease;
 }
-.bar-chart-container.show,
 .doughnut-container.show {
     opacity:1;
     transform:translateY(0);
@@ -216,9 +217,15 @@ body {
     </div>
 
     <div class="charts">
-        <div class="bar-chart-container" id="barChartContainer">
-            <canvas id="itemsPostedChart"></canvas>
+        <div class="bar-charts">
+            <div class="bar-chart-container" id="barChartContainer1">
+                <canvas id="itemsPostedChart"></canvas>
+            </div>
+            <div class="bar-chart-container small" id="barChartContainer2">
+                <canvas id="itemsClaimedChart"></canvas>
+            </div>
         </div>
+
         <div class="doughnuts">
             <div class="doughnut-container" id="totalItemsContainer">
                 <canvas id="totalItemsChart"></canvas>
@@ -246,36 +253,27 @@ window.addEventListener('DOMContentLoaded', () => {
         content.style.opacity=1;
         content.style.transform='translateY(0)';
     });
-
-    // Animate charts from below
-    setTimeout(() => {
-        document.getElementById('barChartContainer').classList.add('show');
-    }, 300);
-    setTimeout(() => {
-        document.getElementById('totalItemsContainer').classList.add('show');
-    }, 600);
-    setTimeout(() => {
-        document.getElementById('claimsStatusContainer').classList.add('show');
-    }, 900);
+    setTimeout(() => document.getElementById('barChartContainer1').classList.add('show'), 300);
+    setTimeout(() => document.getElementById('barChartContainer2').classList.add('show'), 600);
+    setTimeout(() => document.getElementById('totalItemsContainer').classList.add('show'), 900);
+    setTimeout(() => document.getElementById('claimsStatusContainer').classList.add('show'), 1200);
 });
 
-// ============================
-// BAR CHART (Items per weekday)
-// ============================
-const ctxBar = document.getElementById('itemsPostedChart').getContext('2d');
-const gradient = ctxBar.createLinearGradient(0, 0, 0, 400);
-gradient.addColorStop(0, '#3498db');
-gradient.addColorStop(1, '#85c1e9');
+// === BAR CHART 1 ===
+const ctxBar1 = document.getElementById('itemsPostedChart').getContext('2d');
+const gradient1 = ctxBar1.createLinearGradient(0, 0, 0, 200);
+gradient1.addColorStop(0, '#3498db');
+gradient1.addColorStop(1, '#85c1e9');
 
-new Chart(ctxBar, {
+new Chart(ctxBar1, {
     type:'bar',
     data:{
-        labels:['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
+        labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
         datasets:[{
             label:'Items Posted',
             data:[<?php echo implode(',', $item_posted_per_day); ?>],
-            backgroundColor: gradient,
-            borderRadius: 12,
+            backgroundColor: gradient1,
+            borderRadius: 10,
             barPercentage: 0.6,
             categoryPercentage: 0.6,
             hoverBackgroundColor:'#2980b9',
@@ -283,44 +281,47 @@ new Chart(ctxBar, {
     },
     options:{
         responsive:true,
-        animation:{
-            duration:1500,
-            easing:'easeOutCubic'
-        },
-        plugins:{
-            legend:{ display:false },
-            tooltip:{
-                padding:10,
-                titleFont:{ weight:'600' },
-                bodyFont:{ size:13 },
-                backgroundColor:'#2c3e50',
-                titleColor:'#fff',
-                bodyColor:'#fff',
-            }
-        },
+        maintainAspectRatio:false,
+        plugins:{ legend:{ display:false } },
         scales:{
-            x:{
-                grid:{ display:false },
-                ticks:{ color:'#555', font:{ size:12 } }
-            },
-            y:{
-                beginAtZero:true,
-                grid:{
-                    color:'rgba(0,0,0,0.05)',
-                    borderDash:[3,3],
-                    drawBorder:false
-                },
-                ticks:{ stepSize:1, color:'#555', font:{ size:12 } }
-            }
+            x:{ grid:{ display:false }, ticks:{ color:'#555' } },
+            y:{ beginAtZero:true, grid:{ color:'rgba(0,0,0,0.05)' }, ticks:{ color:'#555' } }
         }
     }
 });
 
-// ============================
-// DOUGHNUT CHARTS
-// ============================
+// === BAR CHART 2 (smaller) ===
+const ctxBar2 = document.getElementById('itemsClaimedChart').getContext('2d');
+const gradient2 = ctxBar2.createLinearGradient(0, 0, 0, 200);
+gradient2.addColorStop(0, '#2ecc71');
+gradient2.addColorStop(1, '#82e0aa');
 
-// Members / Lost / Found
+new Chart(ctxBar2, {
+    type:'bar',
+    data:{
+        labels:['Approved','Rejected','Pending'],
+        datasets:[{
+            label:'Claims Status',
+            data:[<?php echo $approved_claims; ?>, <?php echo $rejected_claims; ?>, <?php echo $pending_claims; ?>],
+            backgroundColor: gradient2,
+            borderRadius: 8,
+            barPercentage: 0.5,
+            categoryPercentage: 0.6,
+            hoverBackgroundColor:'#27ae60',
+        }]
+    },
+    options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{ legend:{ display:false } },
+        scales:{
+            x:{ grid:{ display:false }, ticks:{ color:'#555' } },
+            y:{ beginAtZero:true, grid:{ color:'rgba(0,0,0,0.05)' }, ticks:{ color:'#555' } }
+        }
+    }
+});
+
+// === DOUGHNUT CHARTS ===
 new Chart(document.getElementById('totalItemsChart'), {
     type:'doughnut',
     data:{
@@ -328,29 +329,12 @@ new Chart(document.getElementById('totalItemsChart'), {
         datasets:[{
             data:[<?php echo $users; ?>, <?php echo $total_lost; ?>, <?php echo $total_found; ?>],
             backgroundColor:['#17a2b8','#3498db','#2ecc71'],
-            borderColor:'#fff',
-            borderWidth:2,
-            hoverOffset:10
+            borderColor:'#fff', borderWidth:2, hoverOffset:10
         }]
     },
-    options:{
-        animation:{
-            animateScale:true,
-            animateRotate:true,
-            duration:1800,
-            easing:'easeOutBack'
-        },
-        responsive:true,
-        maintainAspectRatio:true,
-        cutout:'65%',
-        plugins:{
-            legend:{ position:'bottom' },
-            tooltip:{ padding:8, titleFont:{ weight:'600' }, bodyFont:{ size:12 } }
-        }
-    }
+    options:{ cutout:'65%', plugins:{ legend:{ position:'bottom' } } }
 });
 
-// Claims (Approved / Rejected / Pending)
 new Chart(document.getElementById('claimsStatusChart'), {
     type:'doughnut',
     data:{
@@ -358,26 +342,10 @@ new Chart(document.getElementById('claimsStatusChart'), {
         datasets:[{
             data:[<?php echo $approved_claims; ?>, <?php echo $rejected_claims; ?>, <?php echo $pending_claims; ?>],
             backgroundColor:['#28a745','#e74c3c','#ffc107'],
-            borderColor:'#fff',
-            borderWidth:2,
-            hoverOffset:10
+            borderColor:'#fff', borderWidth:2, hoverOffset:10
         }]
     },
-    options:{
-        animation:{
-            animateScale:true,
-            animateRotate:true,
-            duration:1800,
-            easing:'easeOutBack'
-        },
-        responsive:true,
-        maintainAspectRatio:true,
-        cutout:'65%',
-        plugins:{
-            legend:{ position:'bottom' },
-            tooltip:{ padding:8, titleFont:{ weight:'600' }, bodyFont:{ size:12 } }
-        }
-    }
+    options:{ cutout:'65%', plugins:{ legend:{ position:'bottom' } } }
 });
 </script>
 </body>
