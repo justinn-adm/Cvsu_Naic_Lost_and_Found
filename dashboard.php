@@ -6,46 +6,65 @@ if(!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Total users, lost items, found items, pending claims
-$users = $total_lost = $total_found = $pending_claims = 0;
+// ======================
+// DASHBOARD STATISTICS
+// ======================
 
-// Users
+// Total users
 $stmt = $conn->prepare("SELECT id FROM users WHERE role='user'");
 $stmt->execute();
 $stmt->store_result();
 $users = $stmt->num_rows;
 
-// Lost items
+// Total lost items
 $stmt = $conn->prepare("SELECT id FROM lost_items");
 $stmt->execute();
 $stmt->store_result();
 $total_lost = $stmt->num_rows;
 
-// Found items
+// Total found items
 $stmt = $conn->prepare("SELECT id FROM found_items");
 $stmt->execute();
 $stmt->store_result();
 $total_found = $stmt->num_rows;
 
-// Pending claims
-$stmt = $conn->prepare("SELECT id FROM claims WHERE status='pending'");
+// Pending claims (only for existing items)
+$stmt = $conn->prepare("
+    SELECT c.id 
+    FROM claims c
+    LEFT JOIN found_items f ON c.item_id = f.id
+    LEFT JOIN lost_items l ON c.item_id = l.id
+    WHERE c.status = 'pending' AND (f.id IS NOT NULL OR l.id IS NOT NULL)
+");
 $stmt->execute();
 $stmt->store_result();
 $pending_claims = $stmt->num_rows;
 
 // Approved claims
-$stmt = $conn->prepare("SELECT id FROM claims WHERE status='approved'");
+$stmt = $conn->prepare("
+    SELECT c.id 
+    FROM claims c
+    LEFT JOIN found_items f ON c.item_id = f.id
+    LEFT JOIN lost_items l ON c.item_id = l.id
+    WHERE c.status = 'approved' AND (f.id IS NOT NULL OR l.id IS NOT NULL)
+");
 $stmt->execute();
 $stmt->store_result();
 $approved_claims = $stmt->num_rows;
 
 // Rejected claims
-$stmt = $conn->prepare("SELECT id FROM claims WHERE status='rejected'");
+$stmt = $conn->prepare("
+    SELECT c.id 
+    FROM claims c
+    LEFT JOIN found_items f ON c.item_id = f.id
+    LEFT JOIN lost_items l ON c.item_id = l.id
+    WHERE c.status = 'rejected' AND (f.id IS NOT NULL OR l.id IS NOT NULL)
+");
 $stmt->execute();
 $stmt->store_result();
 $rejected_claims = $stmt->num_rows;
 
-// Items posted per weekday (lost + found)
+// Items posted per weekday
 $item_posted_per_day = array_fill(1,7,0);
 $result = $conn->query("
     SELECT DAYOFWEEK(created_at) AS weekday, COUNT(*) AS count 
@@ -81,8 +100,8 @@ body {
 
 #dashboard-content {
     opacity:0;
-    transform: translateY(-50px);
-    transition: opacity 1.5s, transform 1.5s;
+    transform: translateY(40px);
+    transition: opacity 1.2s ease, transform 1.2s ease;
 }
 
 .dashboard {
@@ -107,12 +126,10 @@ body {
     transition: transform 0.3s, box-shadow 0.3s;
     text-align: center;
 }
-
 .card:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 20px rgba(0,0,0,0.12);
 }
-
 .card::before {
     content:'';
     position:absolute;
@@ -122,7 +139,6 @@ body {
     height:100%;
     border-radius:12px 0 0 12px;
 }
-
 .members::before { background-color: #17a2b8; }
 .lost::before { background-color: #007bff; }
 .found::before { background-color: #28a745; }
@@ -146,13 +162,10 @@ body {
     border-radius:12px;
     box-shadow:0 4px 15px rgba(0,0,0,0.08);
     height:430px;
+    opacity:0;
+    transform: translateY(60px);
+    transition: opacity 1.5s ease, transform 1.5s ease;
 }
-
-.bar-chart-container canvas {
-    width:100%;
-    height:100%;
-}
-
 .doughnuts {
     flex:1;
     display:flex;
@@ -162,7 +175,6 @@ body {
     align-items:center;
     margin-left:20px;
 }
-
 .doughnut-container {
     background:#fff;
     padding:15px;
@@ -170,11 +182,14 @@ body {
     box-shadow:0 4px 15px rgba(0,0,0,0.08);
     width:100%;
     max-width:200px;
+    opacity:0;
+    transform: translateY(60px);
+    transition: opacity 1.5s ease, transform 1.5s ease;
 }
-
-.doughnut-container canvas {
-    width:100% !important;
-    height:auto !important;
+.bar-chart-container.show,
+.doughnut-container.show {
+    opacity:1;
+    transform:translateY(0);
 }
 </style>
 </head>
@@ -201,14 +216,14 @@ body {
     </div>
 
     <div class="charts">
-        <div class="bar-chart-container">
+        <div class="bar-chart-container" id="barChartContainer">
             <canvas id="itemsPostedChart"></canvas>
         </div>
         <div class="doughnuts">
-            <div class="doughnut-container">
+            <div class="doughnut-container" id="totalItemsContainer">
                 <canvas id="totalItemsChart"></canvas>
             </div>
-            <div class="doughnut-container">
+            <div class="doughnut-container" id="claimsStatusContainer">
                 <canvas id="claimsStatusChart"></canvas>
             </div>
         </div>
@@ -231,9 +246,22 @@ window.addEventListener('DOMContentLoaded', () => {
         content.style.opacity=1;
         content.style.transform='translateY(0)';
     });
+
+    // Animate charts from below
+    setTimeout(() => {
+        document.getElementById('barChartContainer').classList.add('show');
+    }, 300);
+    setTimeout(() => {
+        document.getElementById('totalItemsContainer').classList.add('show');
+    }, 600);
+    setTimeout(() => {
+        document.getElementById('claimsStatusContainer').classList.add('show');
+    }, 900);
 });
 
-// Modern Bar Chart: Items posted per weekday
+// ============================
+// BAR CHART (Items per weekday)
+// ============================
 const ctxBar = document.getElementById('itemsPostedChart').getContext('2d');
 const gradient = ctxBar.createLinearGradient(0, 0, 0, 400);
 gradient.addColorStop(0, '#3498db');
@@ -255,6 +283,10 @@ new Chart(ctxBar, {
     },
     options:{
         responsive:true,
+        animation:{
+            duration:1500,
+            easing:'easeOutCubic'
+        },
         plugins:{
             legend:{ display:false },
             tooltip:{
@@ -284,7 +316,11 @@ new Chart(ctxBar, {
     }
 });
 
-// Doughnut charts remain the same
+// ============================
+// DOUGHNUT CHARTS
+// ============================
+
+// Members / Lost / Found
 new Chart(document.getElementById('totalItemsChart'), {
     type:'doughnut',
     data:{
@@ -298,6 +334,12 @@ new Chart(document.getElementById('totalItemsChart'), {
         }]
     },
     options:{
+        animation:{
+            animateScale:true,
+            animateRotate:true,
+            duration:1800,
+            easing:'easeOutBack'
+        },
         responsive:true,
         maintainAspectRatio:true,
         cutout:'65%',
@@ -308,19 +350,26 @@ new Chart(document.getElementById('totalItemsChart'), {
     }
 });
 
+// Claims (Approved / Rejected / Pending)
 new Chart(document.getElementById('claimsStatusChart'), {
     type:'doughnut',
     data:{
-        labels:['Approved','Rejected'],
+        labels:['Approved','Rejected','Pending'],
         datasets:[{
-            data:[<?php echo $approved_claims; ?>, <?php echo $rejected_claims; ?>],
-            backgroundColor:['#28a745','#e74c3c'],
+            data:[<?php echo $approved_claims; ?>, <?php echo $rejected_claims; ?>, <?php echo $pending_claims; ?>],
+            backgroundColor:['#28a745','#e74c3c','#ffc107'],
             borderColor:'#fff',
             borderWidth:2,
             hoverOffset:10
         }]
     },
     options:{
+        animation:{
+            animateScale:true,
+            animateRotate:true,
+            duration:1800,
+            easing:'easeOutBack'
+        },
         responsive:true,
         maintainAspectRatio:true,
         cutout:'65%',
