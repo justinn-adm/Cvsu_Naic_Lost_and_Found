@@ -174,7 +174,7 @@ $result = $stmt->get_result();
 <body>
 
   <!-- 🔙 Back Button -->
-  <a href="lost.php" class="back-btn">← Back</a>
+  <a href="feeds.php" class="back-btn">← Back</a>
   <!-- You can change "dashboard.php" to whatever page you want users to return to -->
 
   <h2>My Claimed Items</h2>
