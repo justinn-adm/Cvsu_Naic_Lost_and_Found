@@ -7,13 +7,6 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-$total_items = 0;
-$query = "SELECT id FROM lost_items";
-$stmt = $conn->prepare($query);
-$stmt->execute();
-$stmt->store_result();
-$total_items = $stmt->num_rows;
-
 $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
 ?>
 <!DOCTYPE html>
@@ -92,6 +85,27 @@ $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   }
 
+  /* Suggestions */
+  .suggestions {
+    margin-top: 10px;
+    text-align: left;
+    border-top: 1px solid #eee;
+    padding-top: 6px;
+  }
+
+  .match-item {
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+  }
+  .match-item:hover {
+    background: #f1f1f1;
+  }
+  .match-item small {
+    display: block;
+  }
+
   /* Modal Styling */
   .modal-custom {
     display: none;
@@ -149,7 +163,6 @@ $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
 <div class="container py-4">
   <div class="page-header">
     <a href="feeds.php" class="btn btn-outline-dark"><i class="fa fa-arrow-left"></i> Back</a>
-    <h4 class="mb-0">Total Lost Items: <span class="text-primary fw-bold"><?= $total_items; ?></span></h4>
   </div>
 
   <div class="items-grid" id="itemsGrid"></div>
@@ -173,80 +186,104 @@ $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
 </div>
 
 <script>
-  const isAdmin = <?= json_encode($isAdmin) ?>;
+const isAdmin = <?= json_encode($isAdmin) ?>;
 
-  function fetchItems() {
-    fetch('get_items.php')
-      .then(res => res.json())
-      .then(data => {
-        const grid = document.getElementById('itemsGrid');
-        grid.innerHTML = '';
-        data.forEach(item => {
-          const card = document.createElement('div');
-          card.className = 'item-card';
-          card.onclick = () => showItemDetails(item.id);
-          card.innerHTML = `
-            ${item.claimed == 1 ? '<div class="claimed-badge">Claimed</div>' : ''}
-            <img src="${item.image_path}" alt="${item.name}">
-            <p>${item.name}</p>
-            ${isAdmin ? `<button class="btn btn-danger btn-sm mt-2" onclick="event.stopPropagation(); deleteItem(${item.id})"><i class="fa fa-trash"></i> Delete</button>` : ''}
-          `;
-          grid.appendChild(card);
-        });
-      })
-      .catch(err => console.error('Error fetching items:', err));
-  }
+function fetchItems() {
+  fetch('get_items.php')
+    .then(res => res.json())
+    .then(data => {
+      const grid = document.getElementById('itemsGrid');
+      grid.innerHTML = '';
 
-  function showItemDetails(id) {
-    fetch(`get_item_details.php?id=${id}`)
-      .then(res => res.json())
-      .then(item => {
-        if (item.error) return alert(item.error);
+      data.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'item-card';
+        card.onclick = () => showItemDetails(item.id);
 
-        document.getElementById('modalItemName').innerText = item.name;
-        document.getElementById('modalItemImage').src = item.image_path;
-        document.getElementById('modalItemDate').innerText = item.date_found || item.created_at;
-        document.getElementById('modalItemLocation').innerText = item.location;
-        document.getElementById('modalItemDescription').innerText = item.description;
-        document.getElementById('modalItemPoster').innerText = item.anonymous == 1 ? "Anonymous" : (item.uploader_name || "Unknown");
+        card.innerHTML = `
+          ${item.claimed == 1 ? '<div class="claimed-badge">Claimed</div>' : ''}
+          <img src="${item.image_path}" alt="${item.name}">
+          <p>${item.name}</p>
+          ${isAdmin ? `<button class="btn btn-danger btn-sm mt-2" onclick="event.stopPropagation(); deleteItem(${item.id})"><i class="fa fa-trash"></i> Delete</button>` : ''}
+          <div class="suggestions" id="suggestions-${item.id}"></div>
+        `;
+        grid.appendChild(card);
 
-        document.getElementById('itemModal').style.display = 'flex';
-      })
-      .catch(err => {
-        console.error(err);
-        alert('Failed to load item details.');
+        // Fetch suggested matches for each lost item
+        fetch(`suggest_matches.php?lost_id=${item.id}`)
+          .then(res => res.json())
+          .then(matches => {
+            const container = document.getElementById(`suggestions-${item.id}`);
+            if (matches.length > 0) {
+              container.innerHTML = `
+                <small class="text-muted fw-bold">Similar Found Items:</small>
+                ${matches.map(m => `
+                  <div class="match-item mt-1" onclick="event.stopPropagation(); showItemDetails(${m.id}, true)">
+                    <small><i class="fa fa-caret-right"></i> ${m.item_name}</small>
+                    <small class="text-secondary">${m.location}</small>
+                  </div>
+                `).join('')}
+              `;
+            }
+          });
       });
+    })
+    .catch(err => console.error('Error fetching items:', err));
+}
+
+// Updated showItemDetails function
+function showItemDetails(id, isFound = false) {
+  const endpoint = `get_item_details.php?id=${id}&type=${isFound ? 'found' : 'lost'}`;
+
+  fetch(endpoint)
+    .then(res => res.json())
+    .then(item => {
+      if (item.error) return alert(item.error);
+
+      document.getElementById('modalItemName').innerText = item.name || item.item_name;
+      document.getElementById('modalItemImage').src = item.image_path;
+      document.getElementById('modalItemDate').innerText = item.date_found || item.created_at || '';
+      document.getElementById('modalItemLocation').innerText = item.location;
+      document.getElementById('modalItemDescription').innerText = item.description;
+      document.getElementById('modalItemPoster').innerText = item.anonymous == 1 ? "Anonymous" : (item.uploader_name || "Unknown");
+
+      document.getElementById('itemModal').style.display = 'flex';
+    })
+    .catch(err => {
+      console.error(err);
+      alert('Failed to load item details.');
+    });
+}
+
+function closeModal() {
+  document.getElementById('itemModal').style.display = 'none';
+}
+
+function deleteItem(id) {
+  if (confirm("Are you sure you want to delete this item?")) {
+    fetch('delete_item.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ item_id: id })
+    })
+    .then(res => res.text())
+    .then(response => {
+      alert(response);
+      fetchItems();
+    })
+    .catch(err => {
+      console.error(err);
+      alert('Failed to delete item.');
+    });
   }
+}
 
-  function closeModal() {
-    document.getElementById('itemModal').style.display = 'none';
-  }
+window.addEventListener('click', function(event) {
+  const modal = document.getElementById('itemModal');
+  if (event.target === modal) closeModal();
+});
 
-  function deleteItem(id) {
-    if (confirm("Are you sure you want to delete this item?")) {
-      fetch('delete_item.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ item_id: id })
-      })
-      .then(res => res.text())
-      .then(response => {
-        alert(response);
-        fetchItems();
-      })
-      .catch(err => {
-        console.error(err);
-        alert('Failed to delete item.');
-      });
-    }
-  }
-
-  window.addEventListener('click', function(event) {
-    const modal = document.getElementById('itemModal');
-    if (event.target === modal) closeModal();
-  });
-
-  document.addEventListener('DOMContentLoaded', fetchItems);
+document.addEventListener('DOMContentLoaded', fetchItems);
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
