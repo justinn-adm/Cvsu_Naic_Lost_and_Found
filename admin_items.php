@@ -132,7 +132,7 @@ $result = $conn->query($sql);
 </head>
 <body>
 
-<h1>🗂️ Manage Lost & Found Items</h1>
+<h1>🗂️ Manage Lost Items</h1>
 
 <table>
     <thead>
