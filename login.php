@@ -4,6 +4,11 @@ error_reporting(E_ALL);
 include 'db.php';
 session_start();
 
+
+
+
+
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username_input = trim($_POST['username'] ?? '');
     $password_input = $_POST['password'] ?? '';
@@ -30,18 +35,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['username'] = $user['username'];
             $_SESSION['role'] = $user['role'];
 
-            $redirectPage = ($user['role'] === 'admin') ? 'dashb1.php' : 'lost.php';
+            $redirectPage = ($user['role'] === 'admin') ? 'dashb1.php' : 'feeds.php';
             $username = $user['username'];
 
             if ($user['role'] === 'admin') {
                 echo "<script>
                     alert('Welcome Admin $username!');
-                    window.location.href = '$redirectPage';
+                    window.top.location.href = '$redirectPage';
                 </script>";
             } else {
                 echo "<script>
                     alert('Welcome $username!');
-                    window.location.href = '$redirectPage';
+                    window.top.location.href = '$redirectPage';
                 </script>";
             }
             exit();
