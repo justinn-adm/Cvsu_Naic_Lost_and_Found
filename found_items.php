@@ -77,6 +77,7 @@ $total_items = ($result && $row = $result->fetch_assoc()) ? $row['total'] : 0;
     position: relative;
     transition: all 0.3s ease;
     cursor: pointer;
+    overflow: hidden;
   }
 
   .item-card:hover {
@@ -104,15 +105,20 @@ $total_items = ($result && $row = $result->fetch_assoc()) ? $row['total'] : 0;
     margin-top: 4px;
   }
 
+  /* Status badge - on top of image */
   .status-badge {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    padding: 6px 10px;
+    top: 12px;
+    left: 12px;
+    padding: 6px 12px;
     border-radius: 8px;
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 0.8rem;
+    font-weight: 700;
     color: #fff;
+    z-index: 2;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
   }
 
   .status-claimed { background: #dc3545; }
@@ -188,7 +194,7 @@ $total_items = ($result && $row = $result->fetch_assoc()) ? $row['total'] : 0;
 
 <div class="container py-4">
   <div class="page-header">
-    <a href="lost.php" class="btn btn-back"><i class="fa fa-arrow-left"></i> Back</a>
+    <a href="feeds.php" class="btn btn-back"><i class="fa fa-arrow-left"></i> Back</a>
     <h4>Total Found Items: <span class="text-primary fw-bold"><?= $total_items; ?></span></h4>
   </div>
 
@@ -215,7 +221,6 @@ $total_items = ($result && $row = $result->fetch_assoc()) ? $row['total'] : 0;
       while ($row = $result->fetch_assoc()):
         $poster_name = ($row['anonymous'] == 1) ? "Anonymous" : htmlspecialchars($row['username']);
 
-        // ✅ Check if admin approved a claim for this item
         $claim_check = $conn->prepare("SELECT status FROM claims WHERE item_id = ? AND status = 'Approved' LIMIT 1");
         $claim_check->bind_param("i", $row['id']);
         $claim_check->execute();
@@ -332,13 +337,18 @@ function previewProof(event) {
 document.getElementById('proofForm').addEventListener('submit', function(e) {
   e.preventDefault();
   const formData = new FormData(this);
+
   fetch('claim_item.php', { method: 'POST', body: formData })
-  .then(res => res.text())
-  .then(data => {
-    alert(data);
-    closeProofModal();
-    location.reload();
-  });
+    .then(res => res.text())
+    .then(data => {
+      alert(data.trim());
+      closeProofModal();
+      setTimeout(() => location.reload(), 1000);
+    })
+    .catch(err => {
+      alert("Something went wrong. Please try again.");
+      console.error(err);
+    });
 });
 
 window.addEventListener('click', e => {
