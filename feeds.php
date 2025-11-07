@@ -34,30 +34,27 @@ $row_notif = $result_notif->fetch_assoc();
 $unread_count = $row_notif['unread_count'] ?? 0;
 $stmt_notif->close();
 
-/* Fetch recent lost items */
+/* Fetch recent lost and found items */
 $lost_query = "SELECT id, description, image_path, claimed FROM lost_items ORDER BY id DESC LIMIT 2";
 $recent_lost = $conn->query($lost_query);
+
+$found_query = "SELECT id, description, image_path FROM found_items ORDER BY id DESC LIMIT 2";
+$recent_found = $conn->query($found_query);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lost & Found | Lost Items</title>
+<title>Lost & Found | User Dashboard</title>
 
 <!-- Fonts & Icons -->
 <link href="https://fonts.googleapis.com/css2?family=Agrandir:wght@400;600;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Agrandir', sans-serif;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Agrandir', sans-serif; }
 
-/* === BODY === */
 body {
   background: url('images/purple.png') no-repeat center center fixed;
   background-size: cover;
@@ -67,34 +64,28 @@ body {
   animation: fadeInBody 1.2s ease-in-out forwards;
 }
 
-/* === NAVBAR === */
+/* NAVBAR */
 nav {
   width: 100%;
   display: flex;
   justify-content: center;
   gap: 80px;
   position: fixed;
-  top: 0;
-  left: 0;
+  top: 0; left: 0;
   z-index: 100;
-  background: rgba(255, 255, 255, 0.4);
+ 
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255,255,255,0.2);
   padding: 20px 0;
   animation: navbarDrop 1.2s ease-in-out forwards;
-  transition: background 0.3s ease;
 }
 
-/* === NAV LINKS === */
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 80px;
+  gap: 120px;
 }
-
-.nav-item {
-  position: relative; /* ✅ Key fix for dropdown alignment */
-}
+.nav-item { position: relative; }
 
 .nav-links a {
   text-decoration: none;
@@ -102,18 +93,14 @@ nav {
   font-weight: 800;
   font-size: 1.05rem;
   transition: all 0.3s ease;
-  letter-spacing: 0.6px;
   text-transform: uppercase;
-  position: relative;
 }
 .nav-links a:hover { color: #d9b3ff; }
 
-/* Hover underline effect */
 .nav-links a::after {
   content: '';
   position: absolute;
-  left: 0;
-  bottom: -6px;
+  left: 0; bottom: -6px;
   width: 0%;
   height: 2px;
   background: #9333ea;
@@ -121,15 +108,14 @@ nav {
 }
 .nav-links a:hover::after { width: 100%; }
 
-/* === DROPDOWN === */
+/* DROPDOWN */
 .dropdown-content {
   visibility: hidden;
   opacity: 0;
   transform: translateY(8px);
   position: absolute;
-  top: 120%;
-  left: 50%;
-  transform: translateX(-50%) translateY(8px); /* ✅ Centers dropdown perfectly */
+  top: 120%; left: 50%;
+  transform: translateX(-50%) translateY(8px);
   background: rgba(255,255,255,0.98);
   box-shadow: 0 8px 20px rgba(147,51,234,0.25);
   border-radius: 8px;
@@ -139,7 +125,6 @@ nav {
   pointer-events: none;
   text-align: left;
 }
-
 .dropdown-content a {
   display: block;
   padding: 10px 15px;
@@ -160,7 +145,7 @@ nav {
   z-index: 999;
 }
 
-/* 🔔 Notification Bell */
+/* Notification Bell */
 .notification-bell {
   position: relative;
   font-size: 1.3rem;
@@ -169,11 +154,9 @@ nav {
   transition: transform 0.3s;
 }
 .notification-bell:hover { transform: scale(1.2); }
-
 .bell-badge {
   position: absolute;
-  top: -6px;
-  right: -8px;
+  top: -6px; right: -8px;
   background: #ff4757;
   color: #fff;
   font-size: .7rem;
@@ -182,7 +165,6 @@ nav {
   border-radius: 50%;
   animation: pulse 1.3s infinite;
 }
-
 @keyframes pulse {
   0%,100% { transform: scale(1); }
   50% { transform: scale(1.3); }
@@ -206,7 +188,7 @@ nav {
   box-shadow: 0 8px 20px rgba(147,51,234,0.4);
 }
 
-/* === CONTENT === */
+/* CONTENT */
 .container {
   max-width: 1200px;
   margin: 140px auto 40px auto;
@@ -215,8 +197,6 @@ nav {
   padding: 40px;
   box-shadow: 0 8px 25px rgba(140,82,255,0.25);
 }
-
-/* === TOP BAR === */
 .top-bar {
   display: flex;
   justify-content: space-between;
@@ -230,8 +210,7 @@ nav {
   color: #6a2aff;
 }
 .top-bar .user img {
-  width: 55px;
-  height: 55px;
+  width: 55px; height: 55px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #9333ea;
@@ -240,7 +219,7 @@ nav {
 }
 .top-bar .user img:hover { transform: scale(1.08); }
 
-/* === SEARCH BAR === */
+/* SEARCH BAR */
 .search-bar {
   margin-top: 20px;
   display: flex;
@@ -266,7 +245,7 @@ nav {
 }
 .search-bar button:hover { transform: scale(1.05); }
 
-/* === CARDS === */
+/* CARDS */
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fit,minmax(280px,1fr));
@@ -285,13 +264,31 @@ nav {
   transform: translateY(-6px);
   box-shadow: 0 12px 25px rgba(140,82,255,0.35);
 }
-.card img {
+.image-container {
+  position: relative;
+  display: inline-block;
+}
+.image-container img {
   width: 100%;
   height: 180px;
   border-radius: 12px;
   object-fit: cover;
   margin-bottom: 12px;
 }
+.label {
+  position: absolute;
+  top: 10px; left: 10px;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  text-transform: uppercase;
+}
+.label.lost { background: linear-gradient(90deg, #9333ea, #c084fc); }
+.label.found { background: linear-gradient(90deg, #10b981, #34d399); }
+
 .card h3 {
   font-size: 1rem;
   font-weight: 600;
@@ -326,17 +323,15 @@ nav {
   background: linear-gradient(90deg,#9244ff,#b971ff);
 }
 
-/* === BACK TO TOP === */
+/* Back To Top */
 #backToTop {
   position: fixed;
-  bottom: 25px;
-  right: 25px;
+  bottom: 25px; right: 25px;
   background: linear-gradient(135deg,#9333ea,#a855f7);
   color: #fff;
   border: none;
   border-radius: 50%;
-  width: 45px;
-  height: 45px;
+  width: 45px; height: 45px;
   display: none;
   justify-content: center;
   align-items: center;
@@ -346,18 +341,10 @@ nav {
 }
 #backToTop:hover { transform: scale(1.15); }
 
-/* === KEYFRAMES === */
 @keyframes fadeInBody { from { opacity: 0; } to { opacity: 1; } }
 @keyframes navbarDrop {
   0% { opacity: 0; transform: translateY(-60px); }
   100% { opacity: 1; transform: translateY(0); }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  nav { gap: 20px; flex-wrap: wrap; padding: 15px; }
-  .nav-links { gap: 25px; flex-direction: column; }
-  .search-bar input { width: 80%; }
 }
 </style>
 </head>
@@ -365,18 +352,14 @@ nav {
 <body>
 <nav>
   <div class="nav-links">
-    <div class="nav-item"><a href="home.php">Home</a></div>
-
-    <!-- CLAIM ITEMS DROPDOWN -->
+    <div class="nav-item"><a href="feeds.php">Home</a></div>
     <div class="nav-item dropdown">
       <a href="#">View Items ▾</a>
       <div class="dropdown-content">
-        <a href="lost_items.php">View Lost Items</a>
+        <a href="lost_items.php">View My Lost Items</a>
         <a href="found_items.php">View Found Items</a>
       </div>
     </div>
-
-    <!-- POST ITEMS DROPDOWN -->
     <div class="nav-item dropdown">
       <a href="#">Post Item ▾</a>
       <div class="dropdown-content">
@@ -384,8 +367,6 @@ nav {
         <a href="post_found_item.php">Post Found Item</a>
       </div>
     </div>
-
-    <!-- Notification Bell -->
     <div class="nav-item">
       <a href="my_claims.php" class="notification-bell" title="My Claims">
         <i class="fa-solid fa-bell"></i>
@@ -394,7 +375,6 @@ nav {
         <?php endif; ?>
       </a>
     </div>
-
     <div class="logout" id="logoutBtn">
       <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
     </div>
@@ -405,7 +385,7 @@ nav {
   <div class="top-bar">
     <h2>Welcome, <?php echo htmlspecialchars($username); ?> 👋</h2>
     <div class="user">
-      <img src="images/<?php echo htmlspecialchars($profile_img); ?>" alt="Profile" title="Go to My Account" onclick="window.location.href='my_account.php'">
+      <img src="images/<?php echo htmlspecialchars($profile_img); ?>" alt="Profile" onclick="window.location.href='my_account.php'">
     </div>
   </div>
 
@@ -416,15 +396,19 @@ nav {
 
   <div id="searchResults" class="cards" style="display:none;"></div>
 
-  <div class="cards" id="defaultCards">
-    <?php while ($lost = $recent_lost->fetch_assoc()): ?>
+  <!-- LOST ITEMS -->
+  <h2 style="margin-top:30px;color:#9333ea;">Recently Reported Lost Items</h2>
+  <div class="cards">
+    <?php while ($lost = $recent_lost->fetch_assoc()): 
+      $lost_img = $lost['image_path'];
+      if (!str_starts_with($lost_img, 'uploads/')) $lost_img = 'uploads/' . $lost_img;
+      if (!file_exists($lost_img)) $lost_img = 'images/default-placeholder.png';
+    ?>
       <div class="card">
-        <?php 
-          $lost_img = $lost['image_path'];
-          if (!str_starts_with($lost_img, 'uploads/')) $lost_img = 'uploads/' . $lost_img;
-          if (!file_exists($lost_img)) $lost_img = 'images/default-placeholder.png';
-        ?>
-        <img src="<?php echo htmlspecialchars($lost_img); ?>" alt="Lost Item">
+        <div class="image-container">
+          <img src="<?php echo htmlspecialchars($lost_img); ?>" alt="Lost Item">
+          <span class="label lost">Lost</span>
+        </div>
         <h3><?php echo htmlspecialchars($lost['description']); ?></h3>
         <p class="status <?php echo $lost['claimed'] ? 'claimed' : 'missing'; ?>">
           <?php echo $lost['claimed'] ? 'Claimed' : 'Missing'; ?>
@@ -433,56 +417,62 @@ nav {
       </div>
     <?php endwhile; ?>
   </div>
+
+  <!-- FOUND ITEMS -->
+  <h2 style="margin-top:50px;color:#10b981;">Recently Found Items</h2>
+  <div class="cards">
+    <?php while ($found = $recent_found->fetch_assoc()): 
+      $found_img = $found['image_path'];
+      if (!str_starts_with($found_img, 'uploads/')) $found_img = 'uploads/' . $found_img;
+      if (!file_exists($found_img)) $found_img = 'images/default-placeholder.png';
+    ?>
+      <div class="card">
+        <div class="image-container">
+          <img src="<?php echo htmlspecialchars($found_img); ?>" alt="Found Item">
+          <span class="label found">Found</span>
+        </div>
+        <h3><?php echo htmlspecialchars($found['description']); ?></h3>
+        <button onclick="window.location.href='found_details.php?id=<?php echo $found['id']; ?>'">View Details</button>
+      </div>
+    <?php endwhile; ?>
+  </div>
 </div>
 
 <button id="backToTop"><i class="fa-solid fa-chevron-up"></i></button>
 
 <script>
-/* Smooth delayed dropdown */
+/* Dropdown Hover */
 document.querySelectorAll('.dropdown').forEach(drop => {
   let timeout;
-  drop.addEventListener('mouseenter', () => {
-    clearTimeout(timeout);
-    drop.classList.add('show');
-  });
-  drop.addEventListener('mouseleave', () => {
-    timeout = setTimeout(() => drop.classList.remove('show'), 250);
-  });
+  drop.addEventListener('mouseenter', () => { clearTimeout(timeout); drop.classList.add('show'); });
+  drop.addEventListener('mouseleave', () => { timeout = setTimeout(() => drop.classList.remove('show'), 250); });
 });
 
-/* Search functionality */
+/* Search Function */
 function searchItems() {
   const query = document.getElementById('searchInput').value.trim();
-  const defaultCards = document.getElementById('defaultCards');
   const results = document.getElementById('searchResults');
-
   if (query === '') {
-    defaultCards.style.display = 'grid';
     results.style.display = 'none';
     return;
   }
-
   fetch('search_items.php?q=' + encodeURIComponent(query))
-    .then(response => response.text())
+    .then(r => r.text())
     .then(data => {
-      defaultCards.style.display = 'none';
-      results.innerHTML = data || "<p style='text-align:center;font-weight:600;color:#9333ea;'>No items found 😕</p>";
+      results.innerHTML = data || "<p style='text-align:center;color:#9333ea;'>No items found 😕</p>";
       results.style.display = 'grid';
     });
 }
 
-/* Logout confirmation */
+/* Logout */
 document.getElementById('logoutBtn').addEventListener('click', () => {
-  if (confirm("Are you sure you want to log out?")) {
-    window.location.href = 'logout.php';
-  }
+  if (confirm("Are you sure you want to log out?")) window.location.href = 'logout.php';
 });
 
-/* Back to top button */
+/* Back To Top */
 const backToTop = document.getElementById('backToTop');
 window.addEventListener('scroll', () => {
-  if (window.scrollY > 200) backToTop.style.display = 'flex';
-  else backToTop.style.display = 'none';
+  backToTop.style.display = window.scrollY > 200 ? 'flex' : 'none';
 });
 backToTop.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
 </script>
