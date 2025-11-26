@@ -350,3 +350,4 @@ new Chart(document.getElementById('claimsStatusChart'), {
 </script>
 </body>
 </html>
+
