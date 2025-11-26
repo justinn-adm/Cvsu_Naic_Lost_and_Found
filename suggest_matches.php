@@ -10,7 +10,7 @@ if (!isset($_GET['lost_id'])) {
 $lost_id = intval($_GET['lost_id']);
 $user_id = $_SESSION['user_id'];
 
-// Fetch the lost item details (use correct column names)
+// Fetch the lost item details
 $lost = $conn->prepare("SELECT name, description, location FROM lost_items WHERE id=?");
 $lost->bind_param("i", $lost_id);
 $lost->execute();
@@ -27,9 +27,9 @@ $name = '%' . $lost_item['name'] . '%';
 $desc = '%' . $lost_item['description'] . '%';
 $loc  = '%' . $lost_item['location'] . '%';
 
-// Query the found_items table for potential matches (exclude user's own posts)
+// FIXED QUERY → Exclude claimed + pending
 $query = $conn->prepare("
-    SELECT id, item_name, location, image_path
+    SELECT id, item_name, location, image_path, claimed, claim_status
     FROM found_items
     WHERE (
         LOWER(item_name) LIKE LOWER(?) 
@@ -37,8 +37,11 @@ $query = $conn->prepare("
         OR LOWER(location) LIKE LOWER(?)
     )
     AND user_id != ?
+    AND claimed = 0
+    AND claim_status != 'pending'
     LIMIT 3
 ");
+
 $query->bind_param("sssi", $name, $desc, $loc, $user_id);
 $query->execute();
 $matches = $query->get_result()->fetch_all(MYSQLI_ASSOC);
