@@ -18,26 +18,22 @@ $stmt->bind_result($profile_img, $username);
 $stmt->fetch();
 $stmt->close();
 
-// Fetch lost items (by uploader_name)
+// Fetch lost items
 $lost_items = $conn->prepare("SELECT id, description, image_path, claimed FROM lost_items WHERE uploader_name = ? ORDER BY id DESC");
 $lost_items->bind_param("s", $username);
 $lost_items->execute();
 $lost_result = $lost_items->get_result();
 
-// Fetch found items (by user_id)
+// Fetch found items
 $found_items = $conn->prepare("SELECT id, item_name, image_path, claimed FROM found_items WHERE user_id = ? ORDER BY id DESC");
 $found_items->bind_param("i", $user_id);
 $found_items->execute();
 $found_result = $found_items->get_result();
 
-// Function to handle image path
+// Image path helper
 function getImagePath($path) {
-  if (!$path || trim($path) == '') {
-    return 'images/no-image.png'; // fallback
-  }
-  if (str_starts_with($path, 'uploads/') || str_starts_with($path, 'images/')) {
-    return $path;
-  }
+  if (!$path || trim($path) == '') return 'images/no-image.png';
+  if (str_starts_with($path, 'uploads/') || str_starts_with($path, 'images/')) return $path;
   return 'uploads/' . $path;
 }
 ?>
@@ -47,110 +43,167 @@ function getImagePath($path) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Account - Lost & Found</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 body {
   font-family: 'Inter', sans-serif;
-  background: linear-gradient(135deg, #f8f6ff, #e8dfff);
+  background: #f0f2f7;
   margin: 0;
-  padding: 40px;
+  padding: 20px;
+  color: #333;
 }
+
+/* Container */
 .container {
-  max-width: 950px;
+  max-width: 800px;
   margin: auto;
   background: #fff;
-  padding: 35px;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(140, 82, 255, 0.15);
+  padding: 25px 30px;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+  position: relative;
 }
-h1 {
-  text-align: center;
-  color: #6a2aff;
+
+/* Back button */
+.back-btn {
+  display: inline-block;
+  margin-bottom: 25px;
+  padding: 10px 18px;
+  background: #6a2aff;
+  color: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: 0.3s;
 }
+.back-btn:hover { background: #4b00b0; }
+
+/* Profile (top-right) */
 .profile {
+  position: absolute;
+  top: 25px;
+  right: 30px;
   text-align: center;
-  margin-bottom: 30px;
 }
 .profile img {
-  width: 120px;
-  height: 120px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid #9333ea;
 }
+.profile h1 {
+  font-size: 16px;
+  color: #4b0082;
+  margin-top: 6px;
+  font-weight: 700;
+}
+
+/* Section titles */
 .section {
-  margin-top: 30px;
+  margin-top: 80px; /* space to avoid overlap with profile */
 }
 .section h2 {
-  color: #9333ea;
-  border-bottom: 2px solid #eee;
-  padding-bottom: 10px;
+  font-size: 18px;
+  color: #6a2aff;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 6px;
 }
+
+/* Vertical cards */
 .cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 15px;
-  margin-top: 20px;
 }
+
+/* Card styles */
 .card {
-  background: #faf8ff;
+  display: flex;
+  gap: 15px;
+  background: #fff;
   border-radius: 12px;
-  padding: 10px;
-  box-shadow: 0 4px 10px rgba(140,82,255,0.1);
-  text-align: center;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  border-left: 5px solid #6a2aff;
 }
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 15px rgba(140,82,255,0.2);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 .card img {
-  width: 100%;
+  width: 120px;
   height: 120px;
-  border-radius: 8px;
   object-fit: cover;
-  margin-bottom: 8px;
-}
-.card h3 {
-  color: #4b0082;
-  font-size: 15px;
-  margin: 4px 0;
-}
-.status {
-  font-weight: 600;
-  color: #6a2aff;
-  font-size: 13px;
-}
-.back-btn {
-  display: inline-block;
-  margin-bottom: 20px;
-  padding: 10px 20px;
-  background: #6a2aff;
-  color: white;
   border-radius: 8px;
+  flex-shrink: 0;
+}
+.card-body {
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.card-body h3 {
+  font-size: 16px;
+  margin: 0 0 6px 0;
+  font-weight: 600;
+  color: #4b0082;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.card-body p {
+  font-size: 14px;
+  color: #555;
+  margin: 4px 0 8px 0;
+}
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 12px;
+  color: #fff;
+}
+.status-unclaimed { background: #28a745; }
+.status-claimed { background: #dc3545; }
+
+/* View all button */
+.view-all-btn {
+  margin-top: 5px;
+  display: inline-block;
+  padding: 6px 12px;
+  background: #6a2aff;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
   text-decoration: none;
-  font-weight: bold;
-  transition: 0.3s;
+  transition: 0.2s;
 }
-.back-btn:hover {
-  background: #4b00b0;
-}
+.view-all-btn:hover { background: #4b00b0; }
+
+/* Empty state */
 .empty {
   text-align: center;
-  color: #555;
+  color: #777;
   font-style: italic;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <a href="lost.php" class="back-btn">← Back</a>
+  <a href="feeds.php" class="back-btn">← Back</a>
 
   <div class="profile">
     <img src="images/<?php echo htmlspecialchars($profile_img); ?>" alt="Profile">
-    <h1><?php echo htmlspecialchars($username); ?>’s Account</h1>
+    <h1><?php echo htmlspecialchars($username); ?></h1>
   </div>
 
   <div class="section">
@@ -160,8 +213,16 @@ h1 {
         <?php while ($lost = $lost_result->fetch_assoc()): ?>
           <div class="card">
             <img src="<?php echo htmlspecialchars(getImagePath($lost['image_path'])); ?>" alt="Lost Item">
-            <h3><?php echo htmlspecialchars($lost['description']); ?></h3>
-            <p class="status"><?php echo $lost['claimed'] ? 'Claimed' : 'Unclaimed'; ?></p>
+            <div class="card-body">
+              <h3 title="<?php echo htmlspecialchars($lost['description']); ?>">
+                <?php echo htmlspecialchars($lost['description']); ?>
+              </h3>
+              <p>Reported recently</p>
+              <span class="status-badge <?php echo $lost['claimed'] ? 'status-claimed' : 'status-unclaimed'; ?>">
+                <?php echo $lost['claimed'] ? 'Claimed' : 'Unclaimed'; ?>
+              </span>
+              <a href="lost_items.php?id=<?php echo $lost['id']; ?>" class="view-all-btn">View Details</a>
+            </div>
           </div>
         <?php endwhile; ?>
       <?php else: ?>
@@ -177,8 +238,16 @@ h1 {
         <?php while ($found = $found_result->fetch_assoc()): ?>
           <div class="card">
             <img src="<?php echo htmlspecialchars(getImagePath($found['image_path'])); ?>" alt="Found Item">
-            <h3><?php echo htmlspecialchars($found['item_name']); ?></h3>
-            <p class="status"><?php echo $found['claimed'] ? 'Claimed' : 'Unclaimed'; ?></p>
+            <div class="card-body">
+              <h3 title="<?php echo htmlspecialchars($found['item_name']); ?>">
+                <?php echo htmlspecialchars($found['item_name']); ?>
+              </h3>
+              <p>Found recently</p>
+              <span class="status-badge <?php echo $found['claimed'] ? 'status-claimed' : 'status-unclaimed'; ?>">
+                <?php echo $found['claimed'] ? 'Claimed' : 'Unclaimed'; ?>
+              </span>
+              <a href="found_items.php?id=<?php echo $found['id']; ?>" class="view-all-btn">View Details</a>
+            </div>
           </div>
         <?php endwhile; ?>
       <?php else: ?>
