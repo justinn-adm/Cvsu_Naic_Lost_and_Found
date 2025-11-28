@@ -135,8 +135,9 @@ if (isset($_GET['logout'])) {
       <a href="#" class="active" id="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
       <a href="#" id="post_found_item"><i class="fas fa-image"></i> Post Items</a>
       <a href="#" id="manage_items"><i class="fas fa-boxes"></i> Manage Items</a>
-      <a href="#" id="user_management"><i class="fas fa-users-cog"></i> User Management</a>
+     
       <a href="#" id="manage_claims"><i class="fas fa-check-circle"></i> Manage Claims</a>
+       <a href="#" id="user_management"><i class="fas fa-users-cog"></i> User Management</a>
       <a href="?logout=true" id="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </nav>
   </aside>
