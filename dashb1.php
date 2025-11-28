@@ -150,7 +150,7 @@ if (isset($_GET['logout'])) {
     const pages = {
       dashboard: "dashboard.php",
       post_found_item: "post_found_item.php",
-      manage_items: "admin_items.php",
+      manage_items: "manage_items.php",
       user_management: "user_management.php",
       manage_claims: "admin_claims.php"
     };
