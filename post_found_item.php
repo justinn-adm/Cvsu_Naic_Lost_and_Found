@@ -8,6 +8,8 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
+
+// Ensure user exists
 $result = $conn->query("SELECT id FROM users WHERE id = $user_id");
 if ($result->num_rows == 0) die("Error: Logged-in user does not exist.");
 
@@ -15,26 +17,34 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $item_name   = trim($_POST['item_name']);
     $description = trim($_POST['description']);
     $location    = trim($_POST['location']);
-    $date_found  = $_POST['date_found'];
     $anonymous   = isset($_POST['anonymous']) ? 1 : 0;
 
+    // Handle image upload
     $image_path = "";
     if (!empty($_FILES["item_image"]["name"])) {
         $target_dir = "uploads/";
         if (!is_dir($target_dir)) mkdir($target_dir, 0777, true);
+
         $image_path = $target_dir . time() . "_" . basename($_FILES["item_image"]["name"]);
-        if (!move_uploaded_file($_FILES["item_image"]["tmp_name"], $image_path)) die("Error uploading file.");
+
+        if (!move_uploaded_file($_FILES["item_image"]["tmp_name"], $image_path)) {
+            die("Error uploading file.");
+        }
     }
 
-    $sql = "INSERT INTO found_items (user_id, item_name, description, location, date_found, image_path, anonymous) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)";
+    // Insert WITHOUT date_found (MySQL auto timestamp)
+    $sql = "INSERT INTO found_items (user_id, item_name, description, location, image_path, anonymous, status) 
+            VALUES (?, ?, ?, ?, ?, ?, 'Pending')";
+
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("isssssi", $user_id, $item_name, $description, $location, $date_found, $image_path, $anonymous);
+    $stmt->bind_param("issssi", $user_id, $item_name, $description, $location, $image_path, $anonymous);
 
     if ($stmt->execute()) {
-        echo "<script>alert('Found item reported successfully!'); window.location.href='found_items.php';</script>";
+        echo "<script>alert('Found item submitted successfully! Pending admin approval.'); window.location.href='found_items.php';</script>";
         exit();
-    } else die("Error: " . $stmt->error);
+    } else {
+        die('Error: ' . $stmt->error);
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -44,10 +54,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Report Found Item</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
 <style>
 body {
     font-family: 'Poppins', sans-serif;
-    background: #e4e7eb; /* softer gray background */
+    background: #e4e7eb;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -57,7 +68,7 @@ body {
 }
 
 .form-container {
-    background: #fdfdfd; /* subtle off-white */
+    background: #fdfdfd;
     border-radius: 14px;
     padding: 28px 22px;
     width: 100%;
@@ -69,8 +80,8 @@ body {
     text-align: center;
     margin-bottom: 24px;
     font-weight: 600;
-    font-size: 1.6rem; /* slightly bigger heading */
-    color: #1f2937; /* darker gray for elegance */
+    font-size: 1.6rem;
+    color: #1f2937;
 }
 
 .form-group {
@@ -141,7 +152,6 @@ body {
     background: #2563eb;
 }
 
-/* Mobile adjustments */
 @media (max-width: 400px) {
     .form-container {
         padding: 22px 16px;
@@ -152,31 +162,33 @@ body {
 <body>
 <div class="form-container">
     <h2>Report Found Item</h2>
+
     <form method="POST" enctype="multipart/form-data">
         <div class="form-group">
             <label for="item_name">Item Name</label>
             <input type="text" id="item_name" name="item_name" required>
         </div>
+
         <div class="form-group">
             <label for="description">Description</label>
             <textarea id="description" name="description" rows="2" required></textarea>
         </div>
+
         <div class="form-group">
             <label for="location">Location Found</label>
             <input type="text" id="location" name="location" required>
         </div>
-        <div class="form-group">
-            <label for="date_found">Date Found</label>
-            <input type="date" id="date_found" name="date_found" required>
-        </div>
+
         <div class="form-group">
             <label for="item_image">Upload Photo</label>
             <input type="file" id="item_image" name="item_image" accept="image/*">
         </div>
+
         <div class="form-check">
             <input type="checkbox" id="anonymous" name="anonymous">
             <label for="anonymous">Post as Anonymous</label>
         </div>
+
         <button type="submit" class="submit-btn">Submit</button>
     </form>
 </div>
