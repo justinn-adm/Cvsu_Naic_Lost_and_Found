@@ -2,49 +2,73 @@
 include 'db.php';
 session_start();
 
-if (!isset($_GET['lost_id'])) {
-    echo json_encode([]);
-    exit();
-}
+header('Content-Type: application/json');
 
-$lost_id = intval($_GET['lost_id']);
-$user_id = $_SESSION['user_id'];
+// Get lost item ID from query string
+$lost_id = isset($_GET['lost_id']) ? intval($_GET['lost_id']) : 0;
+if ($lost_id === 0) {
+    echo json_encode([]);
+    exit;
+}
 
 // Fetch the lost item details
-$lost = $conn->prepare("SELECT name, description, location FROM lost_items WHERE id=?");
-$lost->bind_param("i", $lost_id);
-$lost->execute();
-$result = $lost->get_result();
-$lost_item = $result->fetch_assoc();
-
-if (!$lost_item) {
+$stmt = $conn->prepare("SELECT name, description FROM lost_items WHERE id = ?");
+$stmt->bind_param("i", $lost_id);
+$stmt->execute();
+$stmt->bind_result($lost_name, $lost_desc);
+if (!$stmt->fetch()) {
     echo json_encode([]);
-    exit();
+    exit;
+}
+$stmt->close();
+
+// Prepare search keywords
+$keywords = explode(' ', $lost_name . ' ' . $lost_desc);
+$keywords = array_filter(array_map('trim', $keywords)); // remove empty strings
+
+if (count($keywords) === 0) {
+    echo json_encode([]);
+    exit;
 }
 
-// Prepare wildcard search terms
-$name = '%' . $lost_item['name'] . '%';
-$desc = '%' . $lost_item['description'] . '%';
-$loc  = '%' . $lost_item['location'] . '%';
+// Build the SQL to find similar found items
+$sql = "SELECT id, item_name, description, location, image_path, claimed 
+        FROM found_items 
+        WHERE claimed = 0 AND (";
 
-// FIXED QUERY → Exclude claimed + pending
-$query = $conn->prepare("
-    SELECT id, item_name, location, image_path, claimed, claim_status
-    FROM found_items
-    WHERE (
-        LOWER(item_name) LIKE LOWER(?) 
-        OR LOWER(description) LIKE LOWER(?) 
-        OR LOWER(location) LIKE LOWER(?)
-    )
-    AND user_id != ?
-    AND claimed = 0
-    AND claim_status != 'pending'
-    LIMIT 3
-");
+$conditions = [];
+$params = [];
+$types = '';
 
-$query->bind_param("sssi", $name, $desc, $loc, $user_id);
-$query->execute();
-$matches = $query->get_result()->fetch_all(MYSQLI_ASSOC);
+foreach ($keywords as $word) {
+    $conditions[] = "(item_name LIKE ? OR description LIKE ?)";
+    $likeWord = "%$word%";
+    $params[] = $likeWord;
+    $params[] = $likeWord;
+    $types .= 'ss';
+}
 
-echo json_encode($matches);
-?>
+$sql .= implode(' OR ', $conditions) . ") ORDER BY id DESC LIMIT 5";
+
+$stmt = $conn->prepare($sql);
+if ($stmt) {
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $matches = [];
+
+    while ($row = $result->fetch_assoc()) {
+        $matches[] = [
+            'id' => $row['id'],
+            'item_name' => $row['item_name'],
+            'description' => $row['description'],
+            'location' => $row['location'],
+            'image_path' => $row['image_path'],
+            'claimed' => intval($row['claimed'])
+        ];
+    }
+
+    echo json_encode($matches);
+} else {
+    echo json_encode([]);
+}
