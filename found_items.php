@@ -9,8 +9,8 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// Get total found items
-$query = "SELECT COUNT(*) AS total FROM found_items";
+// Get total approved found items
+$query = "SELECT COUNT(*) AS total FROM found_items WHERE status='Approved'";
 $result = $conn->query($query);
 $total_items = ($result && $row = $result->fetch_assoc()) ? $row['total'] : 0;
 ?>
@@ -105,7 +105,6 @@ $total_items = ($result && $row = $result->fetch_assoc()) ? $row['total'] : 0;
     margin-top: 4px;
   }
 
-  /* Status badge - on top of image */
   .status-badge {
     position: absolute;
     top: 12px;
@@ -213,6 +212,7 @@ $total_items = ($result && $row = $result->fetch_assoc()) ? $row['total'] : 0;
         u.username
       FROM found_items f
       LEFT JOIN users u ON f.user_id = u.id
+      WHERE f.status = 'Approved'
       ORDER BY f.date_found DESC
     ";
     $result = $conn->query($sql);
@@ -225,18 +225,12 @@ $total_items = ($result && $row = $result->fetch_assoc()) ? $row['total'] : 0;
         $claim_check->bind_param("i", $row['id']);
         $claim_check->execute();
         $claim_result = $claim_check->get_result();
-        $is_approved = ($claim_result && $claim_result->num_rows > 0);
+        $is_claimed = ($claim_result && $claim_result->num_rows > 0);
         $claim_check->close();
 
-        if ($is_approved) {
-          $badge_class = "status-claimed";
-          $badge_text = "Claimed";
-          $can_claim = false;
-        } else {
-          $badge_class = "status-unclaimed";
-          $badge_text = "Unclaimed";
-          $can_claim = ($row['poster_id'] != $user_id);
-        }
+        $badge_class = $is_claimed ? "status-claimed" : "status-unclaimed";
+        $badge_text = $is_claimed ? "Claimed" : "Unclaimed";
+        $can_claim = (!$is_claimed && $row['poster_id'] != $user_id);
     ?>
     <div class="item-card" onclick="showItemDetails(
         '<?= htmlspecialchars($row['item_name']); ?>',
