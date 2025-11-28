@@ -2,21 +2,21 @@
 session_start();
 include 'db.php';
 
-// ✅ 1. Ensure user is logged in
+// ✅ Ensure user is logged in
 if (!isset($_SESSION['user_id'])) {
     die("❌ You must be logged in to claim an item.");
 }
 
 $user_id = intval($_SESSION['user_id']);
 
-// ✅ 2. Validate input
+// ✅ Validate input
 if (!isset($_POST['item_id']) || empty($_POST['item_id'])) {
     die("❌ Invalid request: Missing item ID.");
 }
 
 $item_id = intval($_POST['item_id']);
 
-// ✅ 3. Check if proof image is uploaded
+// ✅ Check if proof image is uploaded
 if (!isset($_FILES['proof_image']) || $_FILES['proof_image']['error'] !== UPLOAD_ERR_OK) {
     die("❌ Please upload a valid proof image.");
 }
@@ -30,7 +30,7 @@ $file_tmp  = $_FILES['proof_image']['tmp_name'];
 $file_name = time() . '_' . preg_replace("/[^a-zA-Z0-9_\.-]/", "_", basename($_FILES['proof_image']['name']));
 $proof_path = $upload_dir . $file_name;
 
-// ✅ 4. Validate file type (JPG, PNG only)
+// ✅ Validate file type (JPG, PNG only)
 $allowed_types = ['image/jpeg', 'image/png', 'image/jpg'];
 $finfo = finfo_open(FILEINFO_MIME_TYPE);
 $file_mime = finfo_file($finfo, $file_tmp);
@@ -44,14 +44,14 @@ if (!move_uploaded_file($file_tmp, $proof_path)) {
     die("❌ Failed to upload proof image.");
 }
 
-// ✅ 5. Start transaction
+// ✅ Start transaction
 $conn->begin_transaction();
 
 try {
     $item = null;
     $table_name = "";
 
-    // ✅ Try to find in found_items first
+    // ✅ Fetch item from found_items with lock
     $stmt = $conn->prepare("SELECT id, user_id, claimed FROM found_items WHERE id = ? FOR UPDATE");
     $stmt->bind_param("i", $item_id);
     $stmt->execute();
@@ -74,9 +74,8 @@ try {
     }
     $stmt->close();
 
-    // If item not found in either table
     if (!$item || empty($table_name)) {
-        throw new Exception("❌ Invalid item. It may not exist anymore or was removed.");
+        throw new Exception("❌ Invalid item. It may not exist or was removed.");
     }
 
     // Prevent claiming your own item
@@ -84,13 +83,11 @@ try {
         throw new Exception("⚠️ You cannot claim your own item.");
     }
 
-    // Prevent claiming an already claimed item
-    if ($item['claimed'] == 1) {
-        throw new Exception("⚠️ This item has already been claimed.");
-    }
-
-    // ✅ 6. Check if the user already has a pending claim for this item
-    $check_claim = $conn->prepare("SELECT id FROM claims WHERE item_id = ? AND user_id = ? AND status IN ('Pending', 'Approved')");
+    // ✅ Check if user already has a pending or approved claim for this item
+    $check_claim = $conn->prepare("
+        SELECT id FROM claims 
+        WHERE item_id = ? AND user_id = ? AND status IN ('Pending', 'Approved')
+    ");
     $check_claim->bind_param("ii", $item_id, $user_id);
     $check_claim->execute();
     $claim_result = $check_claim->get_result();
@@ -100,7 +97,7 @@ try {
     }
     $check_claim->close();
 
-    // ✅ 7. Insert claim record (no item_type)
+    // ✅ Insert new claim (status Pending)
     $status  = "Pending";
     $message = "User submitted claim with proof.";
 
@@ -114,14 +111,6 @@ try {
         throw new Exception("❌ Database error while saving claim: " . $stmt->error);
     }
     $stmt->close();
-
-    // ✅ 8. Mark the correct item as claimed
-    $update = $conn->prepare("UPDATE $table_name SET claimed = 1 WHERE id = ?");
-    $update->bind_param("i", $item_id);
-    if (!$update->execute()) {
-        throw new Exception("❌ Failed to update claimed status in $table_name.");
-    }
-    $update->close();
 
     // ✅ Commit transaction
     $conn->commit();
