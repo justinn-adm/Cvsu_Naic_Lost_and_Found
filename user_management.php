@@ -2,6 +2,13 @@
 include 'db.php';
 session_start();
 
+if (!isset($_SESSION['user_id'])) {
+    header("Location: index.html");
+    exit();
+}
+
+$logged_in_id = $_SESSION['user_id'];
+
 $sql = "SELECT * FROM users"; 
 $result = $conn->query($sql);
 ?>
@@ -54,12 +61,6 @@ $result = $conn->query($sql);
       color: white;
     }
     .add-user-btn:hover { background-color: #0056b3; }
-
-    .home-btn {
-      background-color: #28a745;
-      color: white;
-    }
-    .home-btn:hover { background-color: #218838; }
 
     table {
       width: 100%;
@@ -165,9 +166,11 @@ $result = $conn->query($sql);
               <a href="edit_user.php?id=<?= $row['id'] ?>" class="action-btn edit-btn">
                 <i class="fas fa-edit"></i> Edit
               </a>
-              <a href="delete_user.php?id=<?= $row['id'] ?>" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this user?');">
-                <i class="fas fa-trash-alt"></i> Delete
-              </a>
+              <?php if ($row['id'] != $logged_in_id): ?>
+                <a href="delete_user.php?id=<?= $row['id'] ?>" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this user?');">
+                  <i class="fas fa-trash-alt"></i> Delete
+                </a>
+              <?php endif; ?>
             </td>
           </tr>
         <?php endwhile; ?>
