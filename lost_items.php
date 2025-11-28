@@ -92,7 +92,6 @@ $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
     transition: background 0.2s ease;
   }
   .match-item:hover { background: #f1f1f1; }
-  .match-item small { display: block; }
 
   .modal-custom {
     display: none;
@@ -138,18 +137,6 @@ $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
     font-size: 1.3rem;
     cursor: pointer;
   }
-
-  .btn-action {
-    margin: 4px 0;
-    width: 100%;
-  }
-
-  #proofPreview {
-    display: none;
-    width: 100%;
-    margin-top: 10px;
-    border-radius: 10px;
-  }
 </style>
 </head>
 <body>
@@ -178,7 +165,7 @@ $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
   </div>
 </div>
 
-<!-- Proof Upload Modal -->
+<!-- Proof Modal -->
 <div class="modal-custom" id="proofModal">
   <div class="modal-content-custom">
     <button class="btn-close-custom" onclick="closeProofModal()">&times;</button>
@@ -188,7 +175,7 @@ $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
       <div class="mb-3">
         <label class="form-label">Upload Image Evidence</label>
         <input type="file" name="proof_image" class="form-control" accept="image/*" required onchange="previewProof(event)">
-        <img id="proofPreview" alt="Preview">
+        <img id="proofPreview" style="display:none; width:100%; border-radius:10px; margin-top:10px;">
       </div>
       <button type="submit" class="btn btn-success w-100">Submit Proof</button>
     </form>
@@ -208,9 +195,11 @@ function fetchItems() {
       data.forEach(item => {
         let statusClass = 'status-unclaimed', statusText = 'Unclaimed';
         if (item.claim_status === 'pending') {
-          statusClass = 'status-pending'; statusText = 'Pending';
+          statusClass = 'status-pending';
+          statusText = 'Pending';
         } else if (item.claimed == 1) {
-          statusClass = 'status-claimed'; statusText = 'Claimed';
+          statusClass = 'status-claimed';
+          statusText = 'Claimed';
         }
 
         const card = document.createElement('div');
@@ -225,21 +214,26 @@ function fetchItems() {
         `;
         grid.appendChild(card);
 
-        // Fetch suggested matches
+        // SUGGESTIONS — Show "No similar found items" if none
         fetch(`suggest_matches.php?lost_id=${item.id}`)
           .then(res => res.json())
           .then(matches => {
             const container = document.getElementById(`suggestions-${item.id}`);
-            if (matches.length > 0) {
+            const filtered = matches.filter(m => m.claimed != 1);
+
+            if (filtered.length > 0) {
               container.innerHTML = `
                 <small class="text-muted fw-bold">Similar Found Items:</small>
-                ${matches.map(m => `
-                  <div class="match-item mt-1" onclick="event.stopPropagation(); showItemDetails(${m.id}, true)">
+                ${filtered.map(m => `
+                  <div class="match-item mt-1"
+                       onclick="event.stopPropagation(); showItemDetails(${m.id}, true)">
                     <small><i class="fa fa-caret-right"></i> ${m.item_name}</small>
                     <small class="text-secondary">${m.location}</small>
                   </div>
                 `).join('')}
               `;
+            } else {
+              container.innerHTML = `<small class="text-muted fst-italic">No similar found items.</small>`;
             }
           });
       });
@@ -247,8 +241,7 @@ function fetchItems() {
 }
 
 function showItemDetails(id, isFound = false) {
-  const endpoint = `get_item_details.php?id=${id}&type=${isFound ? 'found' : 'lost'}`;
-  fetch(endpoint)
+  fetch(`get_item_details.php?id=${id}&type=${isFound ? 'found' : 'lost'}`)
     .then(res => res.json())
     .then(item => {
       if (item.error) return alert(item.error);
@@ -258,7 +251,8 @@ function showItemDetails(id, isFound = false) {
       document.getElementById('modalItemDate').innerText = item.date_found || item.created_at || '';
       document.getElementById('modalItemLocation').innerText = item.location;
       document.getElementById('modalItemDescription').innerText = item.description;
-      document.getElementById('modalItemPoster').innerText = item.anonymous == 1 ? "Anonymous" : (item.uploader_name || "Unknown");
+      document.getElementById('modalItemPoster').innerText =
+        item.anonymous == 1 ? "Anonymous" : (item.uploader_name || "Unknown");
 
       selectedItemId = id;
       document.getElementById('claimButton').style.display = isFound ? 'block' : 'none';
@@ -287,6 +281,7 @@ function previewProof(event) {
 document.getElementById('proofForm').addEventListener('submit', function(e) {
   e.preventDefault();
   const formData = new FormData(this);
+
   fetch('claim_item.php', { method: 'POST', body: formData })
     .then(res => res.text())
     .then(data => {
