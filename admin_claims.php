@@ -43,31 +43,88 @@ if (!$result) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(135deg, #89f7fe, #66a6ff);
             font-family: 'Poppins', sans-serif;
+            background: linear-gradient(145deg, #ffffffff, #b5bbb5ff);
+            min-height: 100vh;
         }
         .container {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            background: #fff;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+            margin-top: 50px;
+            margin-bottom: 50px;
+        }
+        h1 {
+            font-weight: 700;
+            color: #212eedff;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .table {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
         }
         .table th {
-            background: #007bff;
-            color: white;
+            background: #3947e2ff;
+            color: #fff;
+            font-weight: 600;
+            text-align: center;
+        }
+        .table td, .table th {
+            vertical-align: middle;
+        }
+        .table tbody tr {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .table tbody tr:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .badge {
+            font-size: 0.9rem;
+            padding: 0.5em 0.8em;
+            border-radius: 12px;
         }
         .btn {
             border-radius: 8px;
         }
-        h1 {
-            font-weight: 600;
+        .btn-sm {
+            padding: 0.35rem 0.7rem;
+        }
+        img.proof-img {
+            max-width: 80px;
+            max-height: 80px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 1px solid #ddd;
+            transition: transform 0.2s ease;
+        }
+        img.proof-img:hover {
+            transform: scale(1.05);
+        }
+        td.text-start {
+            max-width: 250px;
+        }
+        td.text-start p {
+            margin: 0;
+        }
+        @media (max-width: 992px) {
+            .table-responsive {
+                font-size: 0.95rem;
+            }
+            img.proof-img {
+                max-width: 60px;
+                max-height: 60px;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="container my-5">
-    <h1 class="text-center text-primary mb-4">📋 Manage Claims</h1>
+<div class="container">
+    <h1>📋 Manage Claims</h1>
 
     <div class="table-responsive">
         <table class="table table-bordered table-hover align-middle">
@@ -98,7 +155,7 @@ if (!$result) {
                             <td>
                                 <?php if (!empty($row['proof_image'])): ?>
                                     <a href="<?= htmlspecialchars($row['proof_image']); ?>" target="_blank">
-                                        <img src="<?= htmlspecialchars($row['proof_image']); ?>" style="max-width: 100px; max-height: 100px; border-radius: 8px;" alt="Proof Image">
+                                        <img src="<?= htmlspecialchars($row['proof_image']); ?>" class="proof-img" alt="Proof Image">
                                     </a>
                                 <?php else: ?>
                                     <em>No image</em>
