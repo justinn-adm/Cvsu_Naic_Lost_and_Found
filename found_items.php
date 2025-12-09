@@ -219,7 +219,13 @@ $total_items = ($result && $row = $result->fetch_assoc()) ? $row['total'] : 0;
 
     if ($result && $result->num_rows > 0):
       while ($row = $result->fetch_assoc()):
-        $poster_name = ($row['anonymous'] == 1) ? "Anonymous" : htmlspecialchars($row['username']);
+
+        // 🔥 ONLY CHANGE ADDED 🔥
+        if ($row['poster_id'] == $user_id) {
+            $poster_name = "You";
+        } else {
+            $poster_name = ($row['anonymous'] == 1) ? "Anonymous" : htmlspecialchars($row['username']);
+        }
 
         $claim_check = $conn->prepare("SELECT status FROM claims WHERE item_id = ? AND status = 'Approved' LIMIT 1");
         $claim_check->bind_param("i", $row['id']);
