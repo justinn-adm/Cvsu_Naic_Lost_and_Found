@@ -27,166 +27,141 @@ $total_items = ($result && $row = $result->fetch_assoc()) ? $row['total'] : 0;
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
-  body {
-    background: linear-gradient(180deg, #f7f9ff 0%, #eef1f7 100%);
-    font-family: 'Inter', sans-serif;
-    color: #333;
-    padding-bottom: 40px;
-  }
-
-  .page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 25px auto;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  .page-header h4 {
-    font-weight: 700;
-    color: #4b4b4b;
-  }
-
-  .btn-back {
-    background: #7a42ff;
-    color: white;
-    border-radius: 10px;
-    font-weight: 600;
-    padding: 8px 16px;
-    transition: 0.3s;
-  }
-
-  .btn-back:hover {
-    background: #6933e3;
-    color: #fff;
-  }
-
-  .items-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 24px;
-  }
-
-  .item-card {
-    background: #fff;
-    border-radius: 14px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-    padding: 12px;
-    text-align: center;
-    position: relative;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    overflow: hidden;
-  }
-
-  .item-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 8px 22px rgba(0,0,0,0.15);
-  }
-
-  .item-card img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    border-radius: 10px;
-    margin-bottom: 10px;
-  }
-
-  .item-card p {
-    margin: 0;
-    font-weight: 600;
-    color: #2d2d2d;
-  }
-
-  .poster-info {
-    font-size: 0.85rem;
-    color: #555;
-    margin-top: 4px;
-  }
-
-  .status-badge {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: #fff;
-    z-index: 2;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-  }
-
-  .status-claimed { background: #dc3545; }
-  .status-unclaimed { background: #28a745; }
-
-  /* Modal */
-  .modal-custom {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6);
-    justify-content: center;
-    align-items: center;
-    z-index: 1050;
-    padding: 20px;
-  }
-
-  .modal-content-custom {
-    background: #fff;
-    padding: 25px;
-    width: 100%;
-    max-width: 550px;
-    border-radius: 16px;
-    position: relative;
-    animation: slideDown 0.35s ease;
-  }
-
-  @keyframes slideDown {
-    from { transform: translateY(-40px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-
-  .modal-content-custom img {
-    width: 100%;
-    max-height: 260px;
-    object-fit: cover;
-    border-radius: 10px;
-    margin-bottom: 15px;
-  }
-
-  .btn-close-custom {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: transparent;
-    border: none;
-    font-size: 1.3rem;
-    cursor: pointer;
-  }
-
-  .btn-action {
-    margin: 4px 0;
-    width: 100%;
-  }
-
-  #proofPreview {
-    width: 100%;
-    border-radius: 8px;
-    margin-top: 10px;
-    display: none;
-  }
-
-  footer {
-    margin-top: 40px;
-    text-align: center;
-    font-size: 0.9rem;
-    color: #777;
-  }
+/* ===== UNCHANGED DESIGN ===== */
+body {
+  background: linear-gradient(180deg, #f7f9ff 0%, #eef1f7 100%);
+  font-family: 'Inter', sans-serif;
+  color: #333;
+  padding-bottom: 40px;
+}
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 25px auto;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.page-header h4 {
+  font-weight: 700;
+  color: #4b4b4b;
+}
+.btn-back {
+  background: #7a42ff;
+  color: white;
+  border-radius: 10px;
+  font-weight: 600;
+  padding: 8px 16px;
+  transition: 0.3s;
+}
+.btn-back:hover {
+  background: #6933e3;
+  color: #fff;
+}
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+}
+.item-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  padding: 12px;
+  text-align: center;
+  position: relative;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  overflow: hidden;
+}
+.item-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.15);
+}
+.item-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+.item-card p {
+  margin: 0;
+  font-weight: 600;
+  color: #2d2d2d;
+}
+.poster-info {
+  font-size: 0.85rem;
+  color: #555;
+  margin-top: 4px;
+}
+.status-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+  z-index: 2;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+.status-claimed { background: #dc3545; }
+.status-unclaimed { background: #28a745; }
+.modal-custom {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+  padding: 20px;
+}
+.modal-content-custom {
+  background: #fff;
+  padding: 25px;
+  width: 100%;
+  max-width: 550px;
+  border-radius: 16px;
+  position: relative;
+  animation: slideDown 0.35s ease;
+}
+.modal-content-custom img {
+  width: 100%;
+  max-height: 260px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+.btn-close-custom {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+.btn-action {
+  margin: 4px 0;
+  width: 100%;
+}
+#proofPreview {
+  width: 100%;
+  border-radius: 8px;
+  margin-top: 10px;
+  display: none;
+}
+footer {
+  margin-top: 40px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #777;
+}
 </style>
 </head>
 <body>
@@ -209,7 +184,8 @@ $total_items = ($result && $row = $result->fetch_assoc()) ? $row['total'] : 0;
         f.image_path,
         f.anonymous,
         f.user_id AS poster_id,
-        u.username
+        u.username,
+        u.role
       FROM found_items f
       LEFT JOIN users u ON f.user_id = u.id
       WHERE f.status = 'Approved'
@@ -220,8 +196,10 @@ $total_items = ($result && $row = $result->fetch_assoc()) ? $row['total'] : 0;
     if ($result && $result->num_rows > 0):
       while ($row = $result->fetch_assoc()):
 
-        // 🔥 ONLY CHANGE ADDED 🔥
-        if ($row['poster_id'] == $user_id) {
+        // 🔥 NEW: Display "Admin" if poster is admin
+        if ($row['role'] === 'admin') {
+            $poster_name = "Admin";
+        } elseif ($row['poster_id'] == $user_id) {
             $poster_name = "You";
         } else {
             $poster_name = ($row['anonymous'] == 1) ? "Anonymous" : htmlspecialchars($row['username']);
