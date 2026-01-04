@@ -1,8 +1,23 @@
 <?php
 include 'db.php';
 session_start();
-if(!isset($_SESSION['user_id'])) {
+
+if (!isset($_SESSION['user_id'])) {
     header("Location: SignIn_SignUp.html");
+    exit();
+}
+
+// Protect admin route
+if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
+    echo("403 Forbidden");
+    exit();
+}
+
+// Handle logout
+if (isset($_GET['logout'])) {
+    session_unset();
+    session_destroy();
+    header("Location: index.html");
     exit();
 }
 
@@ -119,11 +134,11 @@ canvas:hover { cursor:pointer; filter: brightness(1.05); transition: filter 0.3s
             <p>Total Members</p>
             <h2><?php echo $users; ?></h2>
         </div>
-        <div class="card lost">
+               <div class="card lost" onclick="loadPage('manage_items.php','manage_items')">
             <p>Total Lost Items</p>
             <h2><?php echo $total_lost; ?></h2>
         </div>
-        <div class="card found">
+        <div class="card found" onclick="loadPage('manage_items.php','manage_items')">
             <p>Total Found Items</p>
             <h2><?php echo $total_found; ?></h2>
         </div>
@@ -214,16 +229,16 @@ new Chart(ctxBar1, {
     }
 });
 
-// === BAR CHART 2: Claims Status ===
+// === BAR CHART 2: Claims Status + Pending Items ===
 const ctxBar2 = document.getElementById('itemsClaimedChart').getContext('2d');
 new Chart(ctxBar2, {
     type:'bar',
     data:{
-        labels:['Approved','Rejected','Pending'],
+        labels:['Approved','Rejected','Pending Claims','Pending Items'],
         datasets:[{
-            label:'Claims Status',
-            data:[<?php echo $approved_claims; ?>, <?php echo $rejected_claims; ?>, <?php echo $pending_claims; ?>],
-            backgroundColor:['#28a745','#e74c3c','#ffc107'],
+            label:'Count',
+            data:[<?php echo $approved_claims; ?>, <?php echo $rejected_claims; ?>, <?php echo $pending_claims; ?>, <?php echo $total_pending_items; ?>],
+            backgroundColor:['#28a745','#e74c3c','#ffc107','#9b59b6'],
             borderRadius: 8,
             barPercentage: 0.4,
             categoryPercentage: 0.5
@@ -255,13 +270,14 @@ new Chart(document.getElementById('totalItemsChart'), {
     options:{ cutout:'65%', plugins:{ legend:{ position:'bottom' } }, animation: { duration:1200, easing:'easeOutCubic' } }
 });
 
+// === DOUGHNUT CHART 2: Claims + Pending Items ===
 new Chart(document.getElementById('claimsStatusChart'), {
     type:'doughnut',
     data:{
-        labels:['Approved','Rejected','Pending'],
+        labels:['Approved','Rejected','Pending Claims','Pending Items'],
         datasets:[{
-            data:[<?php echo $approved_claims; ?>, <?php echo $rejected_claims; ?>, <?php echo $pending_claims; ?>],
-            backgroundColor:['#28a745','#e74c3c','#ffc107'],
+            data:[<?php echo $approved_claims; ?>, <?php echo $rejected_claims; ?>, <?php echo $pending_claims; ?>, <?php echo $total_pending_items; ?>],
+            backgroundColor:['#28a745','#e74c3c','#ffc107','#9b59b6'],
             borderColor:'#fff', borderWidth:2, hoverOffset:15
         }]
     },
