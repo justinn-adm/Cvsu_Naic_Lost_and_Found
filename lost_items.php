@@ -3,8 +3,8 @@ include 'db.php';
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
-  header("Location: SignIn_SignUp.html");
-  exit();
+    header("Location: SignIn_SignUp.html");
+    exit();
 }
 
 $user_id = $_SESSION['user_id'];
@@ -15,31 +15,28 @@ $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Lost Items | CvSU Naic Lost & Found</title>
+<title>My Lost Items | CvSU Naic Lost & Found</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <style>
-  body {
+body {
     background: linear-gradient(180deg, #f9fafc 0%, #eef1f5 100%);
     font-family: 'Inter', sans-serif;
     color: #333;
-  }
-
-  .page-header {
+}
+.page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     margin-bottom: 20px;
-  }
-
-  .items-grid {
+}
+.items-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 24px;
-  }
-
-  .item-card {
+}
+.item-card {
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -48,22 +45,19 @@ $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
     position: relative;
     transition: all 0.3s ease;
     cursor: pointer;
-  }
-
-  .item-card:hover {
+}
+.item-card:hover {
     transform: translateY(-6px);
     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-  }
-
-  .item-card img {
+}
+.item-card img {
     width: 100%;
     height: 180px;
     object-fit: cover;
     border-radius: 8px;
     margin-bottom: 10px;
-  }
-
-  .status-badge {
+}
+.status-badge {
     position: absolute;
     top: 12px;
     right: 12px;
@@ -73,27 +67,24 @@ $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
     font-weight: 600;
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  }
-  .status-unclaimed { background: #28a745; }
-  .status-pending { background: #ffc107; color: #222; }
-  .status-claimed { background: #dc3545; }
-
-  .suggestions {
+}
+.status-unclaimed { background: #28a745; }
+.status-pending { background: #ffc107; color: #222; }
+.status-claimed { background: #dc3545; }
+.suggestions {
     margin-top: 10px;
     text-align: left;
     border-top: 1px solid #eee;
     padding-top: 6px;
-  }
-
-  .match-item {
+}
+.match-item {
     cursor: pointer;
     padding: 4px 6px;
     border-radius: 6px;
     transition: background 0.2s ease;
-  }
-  .match-item:hover { background: #f1f1f1; }
-
-  .modal-custom {
+}
+.match-item:hover { background: #f1f1f1; }
+.modal-custom {
     display: none;
     position: fixed;
     top: 0; left: 0;
@@ -103,9 +94,8 @@ $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
     align-items: center;
     z-index: 1050;
     padding: 20px;
-  }
-
-  .modal-content-custom {
+}
+.modal-content-custom {
     background: #fff;
     padding: 25px;
     width: 100%;
@@ -113,22 +103,19 @@ $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
     border-radius: 16px;
     position: relative;
     animation: slideDown 0.35s ease;
-  }
-
-  @keyframes slideDown {
+}
+@keyframes slideDown {
     from { transform: translateY(-40px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
-  }
-
-  .modal-content-custom img {
+}
+.modal-content-custom img {
     width: 100%;
     max-height: 260px;
     object-fit: cover;
     border-radius: 10px;
     margin-bottom: 15px;
-  }
-
-  .btn-close-custom {
+}
+.btn-close-custom {
     position: absolute;
     top: 12px;
     right: 12px;
@@ -136,7 +123,7 @@ $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
     border: none;
     font-size: 1.3rem;
     cursor: pointer;
-  }
+}
 </style>
 </head>
 <body>
@@ -158,7 +145,6 @@ $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
     <p><i class="fa fa-calendar"></i> <strong>Date:</strong> <span id="modalItemDate"></span></p>
     <p><i class="fa fa-map-marker-alt"></i> <strong>Location:</strong> <span id="modalItemLocation"></span></p>
     <p><i class="fa fa-align-left"></i> <strong>Description:</strong> <span id="modalItemDescription"></span></p>
-    <p><i class="fa fa-user"></i> <strong>Posted by:</strong> <span id="modalItemPoster"></span></p>
 
     <button class="btn btn-primary btn-action" id="claimButton" style="display:none;" onclick="openProofModal()">Claim This Item</button>
     <button class="btn btn-secondary btn-action" onclick="closeModal()">Close</button>
@@ -185,12 +171,18 @@ $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
 <script>
 let selectedItemId = null;
 
+// Fetch current user's lost items
 function fetchItems() {
   fetch('get_items.php')
     .then(res => res.json())
     .then(data => {
       const grid = document.getElementById('itemsGrid');
       grid.innerHTML = '';
+
+      if (data.length === 0) {
+        grid.innerHTML = `<p class="text-muted">You have not posted any lost items yet.</p>`;
+        return;
+      }
 
       data.forEach(item => {
         let statusClass = 'status-unclaimed', statusText = 'Unclaimed';
@@ -209,12 +201,12 @@ function fetchItems() {
         card.innerHTML = `
           <div class="status-badge ${statusClass}">${statusText}</div>
           <img src="${item.image_path}" alt="${item.name}">
-          <p>${item.name}</p>
+          <p>${item.description || item.item_description || 'No description provided'}</p>
           <div class="suggestions" id="suggestions-${item.id}"></div>
         `;
         grid.appendChild(card);
 
-        // SUGGESTIONS — Show "No similar found items" if none
+        // Fetch matching found items suggestions
         fetch(`suggest_matches.php?lost_id=${item.id}`)
           .then(res => res.json())
           .then(matches => {
@@ -240,19 +232,18 @@ function fetchItems() {
     });
 }
 
+// Show item modal
 function showItemDetails(id, isFound = false) {
   fetch(`get_item_details.php?id=${id}&type=${isFound ? 'found' : 'lost'}`)
     .then(res => res.json())
     .then(item => {
       if (item.error) return alert(item.error);
 
-      document.getElementById('modalItemName').innerText = item.name || item.item_name;
+      document.getElementById('modalItemName').innerText = item.name || item.item_name || 'Unnamed Item';
       document.getElementById('modalItemImage').src = item.image_path;
       document.getElementById('modalItemDate').innerText = item.date_found || item.created_at || '';
-      document.getElementById('modalItemLocation').innerText = item.location;
-      document.getElementById('modalItemDescription').innerText = item.description;
-      document.getElementById('modalItemPoster').innerText =
-        item.anonymous == 1 ? "Anonymous" : (item.uploader_name || "Unknown");
+      document.getElementById('modalItemLocation').innerText = item.location || 'Unknown';
+      document.getElementById('modalItemDescription').innerText = item.description || item.item_description || 'No description provided';
 
       selectedItemId = id;
       document.getElementById('claimButton').style.display = isFound ? 'block' : 'none';
@@ -260,15 +251,14 @@ function showItemDetails(id, isFound = false) {
     });
 }
 
+// Proof modal functions
 function openProofModal() {
   closeModal();
   document.getElementById('proofItemId').value = selectedItemId;
   document.getElementById('proofModal').style.display = 'flex';
 }
-
 function closeModal() { document.getElementById('itemModal').style.display = 'none'; }
 function closeProofModal() { document.getElementById('proofModal').style.display = 'none'; }
-
 function previewProof(event) {
   const file = event.target.files[0];
   if (file) {
@@ -278,6 +268,7 @@ function previewProof(event) {
   }
 }
 
+// Submit proof
 document.getElementById('proofForm').addEventListener('submit', function(e) {
   e.preventDefault();
   const formData = new FormData(this);
