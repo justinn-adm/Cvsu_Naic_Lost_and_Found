@@ -12,13 +12,19 @@ $user_id = $_SESSION['user_id'];
 $role = $_SESSION['role'] ?? 'user';
 
 if ($role === 'admin') {
-    // Admin sees all items
-    $sql = "SELECT id, name, image_path, claimed, status FROM lost_items ORDER BY id DESC";
+    // Admin sees all lost items
+    $sql = "SELECT id, name, image_path, claimed, status 
+        FROM lost_items 
+        ORDER BY id DESC";
     $stmt = $conn->prepare($sql);
 } else {
-    // Regular users only see approved items
-    $sql = "SELECT id, name, image_path, claimed, status FROM lost_items WHERE status='Approved' ORDER BY id DESC";
+    // Regular users see only THEIR lost items
+    $sql = "SELECT id, name, image_path, claimed, status 
+            FROM lost_items 
+            WHERE user_id = ? 
+            ORDER BY id DESC";
     $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $user_id);
 }
 
 $stmt->execute();
